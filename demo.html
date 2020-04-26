@@ -1,0 +1,80 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Constellation Sketcher Demo</title>
+    <script src="dist/constellation_sketcher.bundle.js"></script>
+    <link rel="stylesheet"
+          href="https://stackpath.bootstrapcdn.com/bootstrap/4.4.1/css/bootstrap.min.css"
+          integrity="sha384-Vkoo8x4CGsO3+Hhxv8T/Q5PaXtkKtu6ug5TOeNV6gBiFeWPGFN9MuhOf23Q9Ifjh"
+          crossorigin="anonymous">
+    <style>
+        body {
+            margin: 10px;
+        }
+    </style>
+    <script>
+        function setConfiguration() {
+            const selector = document.getElementById('constellationSelector');
+            const slider = document.getElementById('speed');
+            const constellation = selector.options[selector.selectedIndex].value;
+            ConstellationSketcher.setConstellation(constellation)
+                                 .setSpeedScale(Math.pow(10, slider.value));
+        }
+        
+        function populateSelector(selector) {
+            selector.innerHTML = "";
+            const names = [...ConstellationSketcher.constellationNames];
+            names.sort()
+            for (const name of names) {
+                const option = document.createElement("option");
+                option.value = name;
+                option.innerHTML = name;
+                if (name === ConstellationSketcher.getConstellation())
+                    option.selected = true;
+                selector.appendChild(option);
+            }
+        }
+    </script>
+</head>
+<body onload="ConstellationSketcher.setConstellation('Orion').sketch()">
+
+<canvas id="constellation-sketcher"
+        width="500"
+        height="500"
+>
+</canvas>
+<br /><br />
+Select a constellation to draw:
+<select class="custom-select"
+        id="constellationSelector"
+        style="width: 200px"
+></select>
+<script>
+    const selector = document.getElementById("constellationSelector");
+    populateSelector(selector);
+</script>
+<br />
+<label for="animate">Animate:&nbsp;</label>
+<input type="checkbox"
+       id="animate"
+       onclick="ConstellationSketcher.setAnimated(this.checked)"
+       checked
+/>
+<br />
+<div style="width: 200px">
+    Animation speed:&nbsp;
+    <input type="range" min="-1" max="1" step=".1" value="0" id="speed"
+           class="custom-range"
+    />
+</div>
+<br />
+<button type="button"
+        class="btn btn-primary"
+        onclick="setConfiguration(); ConstellationSketcher.sketch();"
+>
+    Draw
+</button>
+
+</body>
+</html>
