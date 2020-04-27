@@ -2,16 +2,26 @@ import constellationData from "./constellation_data.json";
 import {randomChoice, extractLinesAtPoint} from './constellation_sketcher_utils.js';
 
 const state = {
-    mode: "waiting",
+    mode: null,
+    superMode: "",
     constellation: "Orion",
     animated: true,
     speedScale: 1,
+    slideshowDwellTime: 4000,
+    slideshowTimeout: null,
 };
 
 export function setConstellation(constellation) {
     state.constellation = constellation;
     return this;
 }
+
+export function chooseRandomConstellation() {
+    state.constellation = randomChoice(constellationNames);
+    return this;
+}
+
+export const getConstellation = () => state.constellation;
 
 export function setAnimated(animated) {
     state.animated = animated;
@@ -23,17 +33,50 @@ export function setSpeedScale(speedScale) {
     return this;
 }
 
+export function setSlideshowDwellTime(dwellTime) {
+    state.slideshowDwellTime = dwellTime;
+    return this;
+}
+
 export function sketch() {
-    let canvas = document.getElementById("constellation-sketcher");
-    state.ctx = canvas.getContext('2d');
-    state.width = canvas.width;
-    state.height = canvas.height;
-    state.padding = .1 * state.width;
+    setup();
+    state.superMode = "";
+    startSketch();
+}
+
+export function slideshow() {
+    setup();
+    state.superMode = "slideshow";
+    startSlideshow();
+}
+
+function setup() {
+    if (state.slideshowTimeout !== null) {
+        clearTimeout(state.slideshowTimeout);
+        state.slideshowTimeout = null;
+    }
     
+    if (state.mode === null) {
+        let canvas = document.getElementById("constellation-sketcher");
+        state.ctx = canvas.getContext('2d');
+        state.width = canvas.width;
+        state.height = canvas.height;
+        state.padding = .1 * state.width;
+        state.mode = "waiting";
+    }
+    clearCanvas();
+}
+
+function clearCanvas() {
     state.ctx.fillStyle = 'rgb(0, 0, 0)';
     state.ctx.strokeStyle = 'rgba(255, 0, 0, 0)';
     state.ctx.fillRect(0, 0, state.width, state.height);
-    
+}
+
+function startSlideshow() {
+    state.slideshowTimeout = null;
+    clearCanvas();
+    chooseRandomConstellation();
     startSketch();
 }
 
@@ -71,7 +114,14 @@ function startSketch() {
         lines.forEach((line) => {
             draw_line(line.x1, line.x2, line.y1, line.y2);
         });
-        state.mode = "waiting";
+        onSketchEnd();
+    }
+}
+
+function onSketchEnd() {
+    state.mode = "waiting";
+    if (state.superMode === "slideshow") {
+        state.slideshowTimeout = setTimeout(startSlideshow, state.slideshowDwellTime);
     }
 }
 
@@ -134,9 +184,11 @@ function drawLineFrame(timestamp) {
         });
         state.modeState.linesToDraw = lines;
         state.modeState.linesDrawing = linesDrawing;
-        state.mode = "waiting";
-        if (state.modeState.linesDrawing.length > 0)
+        if (state.modeState.linesDrawing.length > 0) {
+            state.mode = "waiting";
             startAnimatingALine();
+        } else
+            onSketchEnd();
     } else
         window.requestAnimationFrame(drawLineFrame)
 }

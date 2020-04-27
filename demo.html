@@ -76,5 +76,22 @@ Select a constellation to draw:
     Draw
 </button>
 
+<button type="button"
+        class="btn btn-primary"
+        onclick="
+        setConfiguration();
+        ConstellationSketcher.chooseRandomConstellation().sketch();
+        populateSelect(document.getElementById('constellationSelector'))
+        "
+>Draw random constellation</button>
+
+<button type="button"
+        class="btn btn-primary"
+        onclick="
+        setConfiguration();
+        ConstellationSketcher.slideshow();
+        "
+>Start slideshow</button>
+
 </body>
 </html>
