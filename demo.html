@@ -13,11 +13,25 @@
             margin: 10px;
         }
         #container {
-            width: 500px;
-            margin: 0 auto;
+            display: flex;
+            flex-flow: row wrap;
+            justify-content: center;
+        }
+        #container div {
+            width: 510px;
+            margin-left: 5px;
+            margin-right: 5px;
         }
         .control-row {
             margin-top: 20px;
+            text-align: center;
+            display: flex;
+            justify-content: space-evenly;
+            align-items: center;
+            
+        }
+        .control-row div {
+            display: inline-block;
         }
     </style>
     <script>
@@ -54,16 +68,17 @@
 </head>
 <body onload="ConstellationSketcher.setConstellation('Orion').sketch()">
 <div id="container">
-<h3 id="title" style="text-align: center"></h3>
-<canvas id="constellation-sketcher"
-        width="500"
-        height="500"
->
-</canvas>
+    <div>
+        <h3 id="title" style="text-align: center"></h3>
+        <canvas id="constellation-sketcher"
+                width="500"
+                height="500"
+        >
+        </canvas>
+    </div>
 
 <div style="display: flex; flex-direction: column; justify-content: center;">
-    <div style="text-align: center"
-         class="control-row">
+    <div class="control-row">
         Select a constellation to draw:
         <select class="custom-select"
                 id="constellationSelector"
@@ -75,7 +90,7 @@
         </script>
     </div>
     
-    <div style="display: flex; justify-content: space-around; margin-left: 30px; margin-right: 30px;"
+    <div style="padding-left: 50px; padding-right: 50px;"
          class="control-row">
         <div>
             <label for="animate">Animate:&nbsp;</label>
@@ -85,7 +100,7 @@
                    checked
             />
         </div>
-        <div style="text-align: center">
+        <div>
             Animation speed
             <br />
             <input type="range" min="-1" max="1" step=".1" value="0" id="speed"
@@ -101,17 +116,17 @@
         </div>
     </div>
     
-    <div style="display: flex; justify-content: space-between;"
+    <div style="justify-content: space-between;"
          class="control-row">
         <div style="flex-basis: 140px">
-            <label for="animate">Stars twinkle:&nbsp;</label>
+            <label for="twinkle">Stars twinkle:&nbsp;</label>
             <input type="checkbox"
                    id="twinkle"
                    onclick="ConstellationSketcher.setTwinkle(this.checked)"
                    checked
             />
         </div>
-        <div style="flex-grow: 0; flex-basis: 160px; text-align: center;">
+        <div style="flex-grow: 0; flex-basis: 160px;">
             Twinkle timescale
             <br />
             <input type="range" min="0" max="200" step="10" value="60" id="twinkleSpeed"
@@ -125,7 +140,7 @@
             <br />
             <span id="twinkleSpeedDisplay">60</span>&nbsp;ms
         </div>
-        <div style="flex-grow: 0; flex-basis: 160px; text-align: center;">
+        <div style="flex-grow: 0; flex-basis: 160px;">
             Twinkle amplitude
             <br />
             <input type="range" min="-.5" max=".5" step=".02" value="0" id="twinkleAmp"
@@ -167,8 +182,7 @@
         </div>
     </div>
     
-    <div style="display: flex; justify-content: space-between"
-         class="control-row">
+    <div class="control-row">
         <button type="button"
                 class="btn btn-primary"
                 onclick="setConfiguration(); ConstellationSketcher.sketch();"
@@ -179,9 +193,7 @@
         <button type="button"
                 class="btn btn-primary"
                 onclick="
-                setConfiguration();
                 ConstellationSketcher.chooseRandomConstellation().sketch();
-                populateSelect(document.getElementById('constellationSelector'))
                 "
         >Draw random constellation</button>
         
@@ -189,7 +201,7 @@
                 class="btn btn-primary"
                 onclick="
                 setConfiguration();
-                ConstellationSketcher.slideshow();
+                ConstellationSketcher.chooseRandomConstellation().slideshow();
                 "
         >Random slideshow</button>
     </div>
