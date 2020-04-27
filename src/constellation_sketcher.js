@@ -159,7 +159,22 @@ function startSketch() {
     
     if (state.animated && state.drawLines) {
         const startLine = randomChoice(lines);
-        const [startLines, linesToDraw] = extractLinesAtPoint(lines, startLine.x1, startLine.y1);
+        let [startLines, linesToDraw] = extractLinesAtPoint(lines, startLine.x1, startLine.y1);
+        
+        // Special case for the only non-contiguous constellation
+        if (state.constellation === "Serpens") {
+            // With x = sx(700) as the dividing line, choose a second starting
+            // point in the other half of the constellation
+            let secondStartLine = randomChoice(lines);
+            const line = 0.7 * state.width;
+            while ((startLine.x1 > line && secondStartLine.x1 > line)
+                    || (startLine.x1 < line && secondStartLine.x1 < line))
+                secondStartLine = randomChoice(lines);
+            let extraStartLines;
+            [extraStartLines, linesToDraw] = extractLinesAtPoint(linesToDraw, secondStartLine.x1, secondStartLine.y1);
+            startLines.push(...extraStartLines);
+        }
+        
         state.modeState = {
             linesToDraw: linesToDraw,
             linesDrawing: startLines,
