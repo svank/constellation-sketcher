@@ -46,10 +46,15 @@
                 value = parseFloat(value).toFixed(2);
             document.getElementById(id + "Display").innerHTML = value;
         }
+        
+        ConstellationSketcher.setDrawBeginCallback(() => {
+            document.getElementById("title").innerHTML = ConstellationSketcher.getConstellation();
+        });
     </script>
 </head>
 <body onload="ConstellationSketcher.setConstellation('Orion').sketch()">
 <div id="container">
+<h3 id="title" style="text-align: center"></h3>
 <canvas id="constellation-sketcher"
         width="500"
         height="500"

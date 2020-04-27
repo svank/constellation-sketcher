@@ -12,6 +12,9 @@ const state = {
     speedScale: 1,
     slideshowDwellTime: 4000,
     slideshowTimeout: null,
+    drawBeginCallback: null,
+    drawFrameCompleteCallback: null,
+    drawCompleteCallback: null,
     stars: null,
     twinkeDeltaMags: null,
     modeState: null,
@@ -59,6 +62,21 @@ export function setSlideshowDwellTime(dwellTime) {
     return this;
 }
 
+export function setDrawBeginCallback(drawBeginCallback) {
+    state.drawBeginCallback = drawBeginCallback;
+    return this;
+}
+
+export function setDrawFrameCompleteCallback(drawFrameCompleteCallback) {
+    state.drawFrameCompleteCallback = drawFrameCompleteCallback;
+    return this;
+}
+
+export function setDrawCompleteCallback(drawCompleteCallback) {
+    state.drawCompleteCallback = drawCompleteCallback;
+    return this;
+}
+
 export function sketch() {
     setup();
     state.superMode = "";
@@ -102,6 +120,9 @@ function startSlideshow() {
 }
 
 function startSketch() {
+    if (state.drawBeginCallback instanceof Function)
+        state.drawBeginCallback(state.ctx);
+    
     const cdat = constellationData[state.constellation];
     const sx = (x) => x/1000 * (state.width - 2 * state.padding) + state.padding;
     const sy = (y) => y/1000 * (state.height - 2 * state.padding) + state.padding;
@@ -152,9 +173,16 @@ function startSketch() {
 }
 
 function onSketchEnd() {
+    state.mode = "waiting";
+    if (state.drawCompleteCallback instanceof Function)
+        state.drawCompleteCallback(state.ctx);
+    sketchIsEnded();
+}
+
+function sketchIsEnded() {
     if (state.mode === "waiting" && state.twinkle) {
         redrawField();
-        window.requestAnimationFrame(onSketchEnd)
+        window.requestAnimationFrame(sketchIsEnded)
     }
     if (state.superMode === "slideshow"
         && state.mode === "waiting"
@@ -202,9 +230,11 @@ function drawLineFrame(timestamp) {
     if (newFraction < oldFraction) newFraction = oldFraction;
     state.modeState.fraction = newFraction;
     
+    let redrew = false;
     if (state.twinkle && twinkleTimeout()) {
         redrawField();
         oldFraction = 0;
+        redrew = true;
     }
     
     state.modeState.linesDrawing.forEach((line) => {
@@ -216,6 +246,9 @@ function drawLineFrame(timestamp) {
         const y2 = y1 + dy * (newFraction - oldFraction);
         drawLine(x1, x2, y1, y2)
     });
+    
+    if (state.drawFrameCompleteCallback instanceof Function)
+        state.drawFrameCompleteCallback(state.ctx, redrew);
     
     if (newFraction >= 1) {
         let lines = state.modeState.linesToDraw;
