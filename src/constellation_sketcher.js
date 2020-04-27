@@ -115,7 +115,6 @@ function clearCanvas() {
 function startSlideshow() {
     state.slideshowTimeout = null;
     clearCanvas();
-    chooseRandomConstellation();
     startSketch();
 }
 
@@ -187,7 +186,10 @@ function sketchIsEnded() {
     if (state.superMode === "slideshow"
         && state.mode === "waiting"
         && state.slideshowTimeout === null) {
-        state.slideshowTimeout = setTimeout(startSlideshow, state.slideshowDwellTime);
+        state.slideshowTimeout = setTimeout(() => {
+            chooseRandomConstellation();
+            startSlideshow();
+        }, state.slideshowDwellTime);
     }
 }
 
