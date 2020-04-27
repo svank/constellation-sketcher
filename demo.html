@@ -12,14 +12,19 @@
         body {
             margin: 10px;
         }
+        #container {
+            width: 500px;
+            margin: 0 auto;
+        }
+        .control-row {
+            margin-top: 20px;
+        }
     </style>
     <script>
         function setConfiguration() {
             const selector = document.getElementById('constellationSelector');
-            const slider = document.getElementById('speed');
             const constellation = selector.options[selector.selectedIndex].value;
-            ConstellationSketcher.setConstellation(constellation)
-                                 .setSpeedScale(Math.pow(10, slider.value));
+            ConstellationSketcher.setConstellation(constellation);
         }
         
         function populateSelector(selector) {
@@ -35,63 +40,150 @@
                 selector.appendChild(option);
             }
         }
+        
+        function updateDisplay(id, value) {
+            if (parseFloat(value) != parseInt(value))
+                value = parseFloat(value).toFixed(2);
+            document.getElementById(id + "Display").innerHTML = value;
+        }
     </script>
 </head>
 <body onload="ConstellationSketcher.setConstellation('Orion').sketch()">
-
+<div id="container">
 <canvas id="constellation-sketcher"
         width="500"
         height="500"
 >
 </canvas>
-<br /><br />
-Select a constellation to draw:
-<select class="custom-select"
-        id="constellationSelector"
-        style="width: 200px"
-></select>
-<script>
-    const selector = document.getElementById("constellationSelector");
-    populateSelector(selector);
-</script>
-<br />
-<label for="animate">Animate:&nbsp;</label>
-<input type="checkbox"
-       id="animate"
-       onclick="ConstellationSketcher.setAnimated(this.checked)"
-       checked
-/>
-<br />
-<div style="width: 200px">
-    Animation speed:&nbsp;
-    <input type="range" min="-1" max="1" step=".1" value="0" id="speed"
-           class="custom-range"
-    />
+
+<div style="display: flex; flex-direction: column; justify-content: center;">
+    <div style="text-align: center"
+         class="control-row">
+        Select a constellation to draw:
+        <select class="custom-select"
+                id="constellationSelector"
+                style="width: 200px"
+        ></select>
+        <script>
+            const selector = document.getElementById("constellationSelector");
+            populateSelector(selector);
+        </script>
+    </div>
+    
+    <div style="display: flex; justify-content: space-around; margin-left: 30px; margin-right: 30px;"
+         class="control-row">
+        <div>
+            <label for="animate">Animate:&nbsp;</label>
+            <input type="checkbox"
+                   id="animate"
+                   onclick="ConstellationSketcher.setAnimated(this.checked)"
+                   checked
+            />
+        </div>
+        <div style="text-align: center">
+            Animation speed
+            <br />
+            <input type="range" min="-1" max="1" step=".1" value="0" id="speed"
+                   class="custom-range"
+                   style="width: 150px"
+                   oninput="
+                   ConstellationSketcher.setSpeedScale(Math.pow(10, this.value))
+                   updateDisplay('speed', Math.pow(10, this.value));
+                   "
+            />
+            <br />
+            <span id="speedDisplay">1</span>
+        </div>
+    </div>
+    
+    <div style="display: flex; justify-content: space-between;"
+         class="control-row">
+        <div style="flex-basis: 140px">
+            <label for="animate">Stars twinkle:&nbsp;</label>
+            <input type="checkbox"
+                   id="twinkle"
+                   onclick="ConstellationSketcher.setTwinkle(this.checked)"
+                   checked
+            />
+        </div>
+        <div style="flex-grow: 0; flex-basis: 160px; text-align: center;">
+            Twinkle timescale
+            <br />
+            <input type="range" min="0" max="200" step="10" value="60" id="twinkleSpeed"
+                   class="custom-range"
+                   style="width: 150px"
+                   oninput="
+                   ConstellationSketcher.setTwinkleTimescale(this.value)
+                   updateDisplay('twinkleSpeed', this.value);
+                   "
+            />
+            <br />
+            <span id="twinkleSpeedDisplay">60</span>&nbsp;ms
+        </div>
+        <div style="flex-grow: 0; flex-basis: 160px; text-align: center;">
+            Twinkle amplitude
+            <br />
+            <input type="range" min="-.5" max=".5" step=".02" value="0" id="twinkleAmp"
+                   class="custom-range"
+                   style="width: 150px"
+                   oninput="
+                   ConstellationSketcher.setTwinkleAmplitude(Math.pow(10, this.value));
+                   updateDisplay('twinkleAmp', Math.pow(10, this.value));
+                   "
+            />
+            <br />
+            <span id="twinkleAmpDisplay">1</span>
+        </div>
+    </div>
+    
+    <div class="control-row" style="text-align: center">
+        Slideshow delay between constellations
+            <br />
+            <input type="range" min="0" max="10000" step="500" value="4000" id="slideshowDwell"
+                   class="custom-range"
+                   style="width: 150px"
+                   oninput="
+                   ConstellationSketcher.setSlideshowDwellTime(this.value);
+                   updateDisplay('slideshowDwell', this.value);
+                   "
+            />
+            <br />
+            <span id="slideshowDwellDisplay">4000</span>&nbsp;ms
+    </div>
+    
+    <div style="display: flex; justify-content: space-between"
+         class="control-row">
+        <button type="button"
+                class="btn btn-primary"
+                onclick="setConfiguration(); ConstellationSketcher.sketch();"
+        >
+            Draw
+        </button>
+        
+        <button type="button"
+                class="btn btn-primary"
+                onclick="
+                setConfiguration();
+                ConstellationSketcher.chooseRandomConstellation().sketch();
+                populateSelect(document.getElementById('constellationSelector'))
+                "
+        >Draw random constellation</button>
+        
+        <button type="button"
+                class="btn btn-primary"
+                onclick="
+                setConfiguration();
+                ConstellationSketcher.slideshow();
+                "
+        >Random slideshow</button>
+    </div>
+    
+    <div class="text-muted control-row">
+        (New settings may not take effect until a new constellation is drawn. 
+        This degree of interactivity is provided for experimentation and is not 
+        seen as a likely use case for this library.)
+    </div>
 </div>
-<br />
-<button type="button"
-        class="btn btn-primary"
-        onclick="setConfiguration(); ConstellationSketcher.sketch();"
->
-    Draw
-</button>
-
-<button type="button"
-        class="btn btn-primary"
-        onclick="
-        setConfiguration();
-        ConstellationSketcher.chooseRandomConstellation().sketch();
-        populateSelect(document.getElementById('constellationSelector'))
-        "
->Draw random constellation</button>
-
-<button type="button"
-        class="btn btn-primary"
-        onclick="
-        setConfiguration();
-        ConstellationSketcher.slideshow();
-        "
->Start slideshow</button>
-
+</div>
 </body>
 </html>

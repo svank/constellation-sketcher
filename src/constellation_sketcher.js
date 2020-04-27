@@ -6,9 +6,15 @@ const state = {
     superMode: "",
     constellation: "Orion",
     animated: true,
+    twinkle: true,
+    twinkleTimescale: 60,
+    twinkleAmplitude: 1,
     speedScale: 1,
     slideshowDwellTime: 4000,
     slideshowTimeout: null,
+    stars: null,
+    twinkeDeltaMags: null,
+    modeState: null,
 };
 
 export function setConstellation(constellation) {
@@ -25,6 +31,21 @@ export const getConstellation = () => state.constellation;
 
 export function setAnimated(animated) {
     state.animated = animated;
+    return this;
+}
+
+export function setTwinkle(twinkle) {
+    state.twinkle = twinkle;
+    return this;
+}
+
+export function setTwinkleAmplitude(twinkleAmplitude) {
+    state.twinkleAmplitude = twinkleAmplitude;
+    return this;
+}
+
+export function setTwinkleTimescale(twinkleTimescale) {
+    state.twinkleTimescale = twinkleTimescale;
     return this;
 }
 
@@ -86,10 +107,16 @@ function startSketch() {
     const sy = (y) => y/1000 * (state.height - 2 * state.padding) + state.padding;
     const sv = (v) => v/10
     
+    state.twinkleTimestamp = performance.now();
+    state.stars = [];
+    state.twinkeDeltaMags = [];
     for (let i=0; i<cdat.stars.x.length; i++) {
-        draw_star(sx(cdat.stars.x[i]),
-                  sy(cdat.stars.y[i]),
-                  sv(cdat.stars.Vmag[i]));
+        const data = [sx(cdat.stars.x[i]),
+                      sy(cdat.stars.y[i]),
+                      sv(cdat.stars.Vmag[i])]
+        state.stars.push(data);
+        state.twinkeDeltaMags.push(0);
+        drawStar(...data);
     }
     
     const lines = [];
@@ -106,21 +133,32 @@ function startSketch() {
         const [startLines, linesToDraw] = extractLinesAtPoint(lines, startLine.x1, startLine.y1);
         state.modeState = {
             linesToDraw: linesToDraw,
-            linesDrawing: startLines
+            linesDrawing: startLines,
+            linesFinished: []
         };
         
         startAnimatingALine();
     } else {
+        state.modeState = {
+            linesToDraw: [],
+            linesDrawing: [],
+            linesFinished: lines
+        };
         lines.forEach((line) => {
-            draw_line(line.x1, line.x2, line.y1, line.y2);
+            drawLine(line.x1, line.x2, line.y1, line.y2);
         });
         onSketchEnd();
     }
 }
 
 function onSketchEnd() {
-    state.mode = "waiting";
-    if (state.superMode === "slideshow") {
+    if (state.mode === "waiting" && state.twinkle) {
+        redrawField();
+        window.requestAnimationFrame(onSketchEnd)
+    }
+    if (state.superMode === "slideshow"
+        && state.mode === "waiting"
+        && state.slideshowTimeout === null) {
         state.slideshowTimeout = setTimeout(startSlideshow, state.slideshowDwellTime);
     }
 }
@@ -158,11 +196,16 @@ function drawLineFrame(timestamp) {
     if (state.mode !== "drawing_lines")
         return;
     
-    const oldFraction = state.modeState.fraction;
+    let oldFraction = state.modeState.fraction;
     let newFraction = (timestamp - state.modeState.aniStart) / state.modeState.aniDuration;
     if (newFraction > 1) newFraction = 1;
     if (newFraction < oldFraction) newFraction = oldFraction;
     state.modeState.fraction = newFraction;
+    
+    if (state.twinkle && twinkleTimeout()) {
+        redrawField();
+        oldFraction = 0;
+    }
     
     state.modeState.linesDrawing.forEach((line) => {
         const dx = line.x2 - line.x1;
@@ -171,12 +214,13 @@ function drawLineFrame(timestamp) {
         const x2 = x1 + dx * (newFraction - oldFraction);
         const y1 = line.y1 + dy * oldFraction;
         const y2 = y1 + dy * (newFraction - oldFraction);
-        draw_line(x1, x2, y1, y2)
+        drawLine(x1, x2, y1, y2)
     });
     
     if (newFraction >= 1) {
         let lines = state.modeState.linesToDraw;
         let linesDrawing = [];
+        state.modeState.linesFinished.push(...state.modeState.linesDrawing);
         state.modeState.linesDrawing.forEach((line) => {
             let newLinesDrawing;
             [newLinesDrawing, lines] = extractLinesAtPoint(lines, line.x2, line.y2);
@@ -184,16 +228,43 @@ function drawLineFrame(timestamp) {
         });
         state.modeState.linesToDraw = lines;
         state.modeState.linesDrawing = linesDrawing;
-        if (state.modeState.linesDrawing.length > 0) {
-            state.mode = "waiting";
+        state.mode = "waiting";
+        if (state.modeState.linesDrawing.length > 0)
             startAnimatingALine();
-        } else
+        else
             onSketchEnd();
     } else
         window.requestAnimationFrame(drawLineFrame)
 }
 
-function draw_star(x, y, Vmag) {
+function twinkleTimeout() {
+    return performance.now() - state.twinkleTimestamp > state.twinkleTimescale;
+}
+
+function redrawField() {
+    clearCanvas();
+    if (twinkleTimeout()) {
+        state.twinkeDeltaMags = state.stars.map((data) => {
+            const mag = data[2];
+            if (mag < 6)
+                return (10 - mag)
+                    * (Math.random() * 0.15 - 0.075)
+                    * state.twinkleAmplitude;
+            return 0;
+        });
+        state.twinkleTimestamp = performance.now();
+    }
+    state.stars.forEach((data, idx) => {
+        let [x, y, mag] = data;
+        mag += state.twinkeDeltaMags[idx];
+        drawStar(x, y, mag);
+    });
+    state.modeState.linesFinished.forEach((line) => {
+        drawLine(line.x1, line.x2, line.y1, line.y2);
+    });
+}
+
+function drawStar(x, y, Vmag) {
     const r = (7 - Vmag) / 4 + .5;
     const opac = 1 - .15 * (Vmag-1)
     state.ctx.beginPath();
@@ -202,7 +273,7 @@ function draw_star(x, y, Vmag) {
     state.ctx.fill();
 }
 
-function draw_line(x1, x2, y1, y2) {
+function drawLine(x1, x2, y1, y2) {
     state.ctx.beginPath();
     state.ctx.strokeStyle = 'rgba(255,245,219,.4)';
     state.ctx.lineWidth = 2;
