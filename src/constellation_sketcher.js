@@ -6,6 +6,7 @@ const state = {
     superMode: "",
     constellation: "Orion",
     animated: true,
+    drawLines: true,
     twinkle: true,
     twinkleTimescale: 60,
     twinkleAmplitude: 1,
@@ -34,6 +35,11 @@ export const getConstellation = () => state.constellation;
 
 export function setAnimated(animated) {
     state.animated = animated;
+    return this;
+}
+
+export function setDrawLines(drawLines) {
+    state.drawLines = drawLines;
     return this;
 }
 
@@ -140,15 +146,18 @@ function startSketch() {
     }
     
     const lines = [];
-    for (let i=0; i<cdat.lines.start.length; i++) {
-        lines.push({x1: sx(cdat.stars.x[cdat.lines.start[i]]),
-                    y1: sy(cdat.stars.y[cdat.lines.start[i]]),
-                    x2: sx(cdat.stars.x[cdat.lines.stop[i]]),
-                    y2: sy(cdat.stars.y[cdat.lines.stop[i]]),
-        });
+    if (state.drawLines) {
+        for (let i = 0; i < cdat.lines.start.length; i++) {
+            lines.push({
+                x1: sx(cdat.stars.x[cdat.lines.start[i]]),
+                y1: sy(cdat.stars.y[cdat.lines.start[i]]),
+                x2: sx(cdat.stars.x[cdat.lines.stop[i]]),
+                y2: sy(cdat.stars.y[cdat.lines.stop[i]]),
+            });
+        }
     }
     
-    if (state.animated) {
+    if (state.animated && state.drawLines) {
         const startLine = randomChoice(lines);
         const [startLines, linesToDraw] = extractLinesAtPoint(lines, startLine.x1, startLine.y1);
         state.modeState = {

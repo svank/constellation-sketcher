@@ -36,6 +36,8 @@ Constellation Sketcher can be configured through a set of functions. Each config
 
 * `ConstellationSketcher.setAnimated(animated)`: Accepts a boolean. If true, constellations are drawn as an animation. If false, they are drawn immediately upon the start of drawing.
 
+* `ConstellationSketcher.setDrawLines(drawLines)`: Accepts a boolean. If false, lines are not drawn, only stars.
+
 * `ConstellationSketcher.setTwinkle(twinkle)`: Accepts a boolean. If true, stars twinkle.
 
 * `ConstellationSketcher.setTwinkleAmplitude(twinkleAmplitude)`: Accepts a number which multiplies the amount stars change in magnitude when flickering. The default is `1`.

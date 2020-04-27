@@ -141,7 +141,17 @@
         </div>
     </div>
     
-    <div class="control-row" style="text-align: center">
+    <div class="control-row">
+        <div>
+            <label for="drawLines">Draw lines:&nbsp;</label>
+            <input type="checkbox"
+                   id="drawLines"
+                   onclick="ConstellationSketcher.setDrawLines(this.checked)"
+                   checked
+            />
+        </div>
+        
+        <div>
         Slideshow delay between constellations
             <br />
             <input type="range" min="0" max="10000" step="500" value="4000" id="slideshowDwell"
@@ -154,6 +164,7 @@
             />
             <br />
             <span id="slideshowDwellDisplay">4000</span>&nbsp;ms
+        </div>
     </div>
     
     <div style="display: flex; justify-content: space-between"
