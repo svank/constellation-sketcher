@@ -12,6 +12,7 @@ const state = {
     twinkleTimescale: 60,
     twinkleAmplitude: 1,
     speedScale: 1,
+    sizeScale: 1,
     slideshowDwellTime: 4000,
     slideshowTimeout: null,
     weights: {popular: 2, striking: 2, medium: 1, small: 0},
@@ -22,6 +23,7 @@ const state = {
     twinkeDeltaMags: null,
     modeState: null,
     recentConstellations: [],
+    canvasScale: null,
 };
 
 export function setConstellation(constellation) {
@@ -84,6 +86,11 @@ export function setTwinkleTimescale(twinkleTimescale) {
 
 export function setSpeedScale(speedScale) {
     state.speedScale = speedScale;
+    return this;
+}
+
+export function setSizeScale(sizeScale) {
+    state.sizeScale = sizeScale;
     return this;
 }
 
@@ -156,6 +163,7 @@ function setup() {
         state.ctx = canvas.getContext('2d');
         state.width = canvas.width;
         state.height = canvas.height;
+        state.canvasScale = Math.max(state.width, state.height);
         state.padding = .1 * state.width;
         state.mode = "waiting";
     }
@@ -184,8 +192,8 @@ function startSketch() {
         state.drawBeginCallback(state.ctx);
     
     const cdat = constellationData[state.constellation];
-    const sx = (x) => x/1000 * (state.width - 2 * state.padding) + state.padding;
-    const sy = (y) => y/1000 * (state.height - 2 * state.padding) + state.padding;
+    const sx = (x) => x/1000 * (state.canvasScale - 2 * state.padding) + state.padding + (state.width - state.canvasScale)/2;
+    const sy = (y) => y/1000 * (state.canvasScale - 2 * state.padding) + state.padding + (state.height - state.canvasScale)/2;
     const sv = (v) => v/10
     
     state.twinkleTimestamp = performance.now();
@@ -221,7 +229,7 @@ function startSketch() {
             // With x = sx(700) as the dividing line, choose a second starting
             // point in the other half of the constellation
             let secondStartLine = randomChoice(lines);
-            const line = 0.7 * state.width;
+            const line = 0.7 * state.canvasScale;
             while ((startLine.x1 > line && secondStartLine.x1 > line)
                     || (startLine.x1 < line && secondStartLine.x1 < line))
                 secondStartLine = randomChoice(lines);
@@ -282,8 +290,8 @@ function sketchIsEnded() {
  */
 function startAnimatingALine() {
     const lengths = state.modeState.linesDrawing.map((line) => (
-        Math.sqrt(Math.pow((line.x2-line.x1)/state.width, 2)
-            + Math.pow((line.y2-line.y1)/state.height, 2))
+        Math.sqrt(Math.pow((line.x2-line.x1)/state.canvasScale, 2)
+            + Math.pow((line.y2-line.y1)/state.canvasScale, 2))
     ));
     
     state.modeState.fraction = 0;
@@ -379,7 +387,7 @@ function redrawField() {
 }
 
 function drawStar(x, y, Vmag) {
-    const r = (7 - Vmag) / 4 + .5;
+    const r = (7 - Vmag) * state.canvasScale / 2000 * state.sizeScale + 0.5;
     const opac = 1 - .15 * (Vmag-1)
     state.ctx.beginPath();
     state.ctx.fillStyle = `rgba(255,255,255,${opac})`;
@@ -389,8 +397,8 @@ function drawStar(x, y, Vmag) {
 
 function drawLine(x1, x2, y1, y2) {
     state.ctx.beginPath();
-    state.ctx.strokeStyle = 'rgba(255,245,219,.4)';
-    state.ctx.lineWidth = 2;
+    state.ctx.strokeStyle = 'rgba(255,239,187,0.4)';
+    state.ctx.lineWidth = Math.max(2, 2 * state.canvasScale / 500);
     state.ctx.moveTo(x1, y1);
     state.ctx.lineTo(x2, y2);
     state.ctx.stroke()

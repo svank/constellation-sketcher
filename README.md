@@ -18,7 +18,7 @@ The library weighs in at about 100 kb, most of which is stellar data.
 
 ## Use
 
-When started, Constellation Sketcher looks for a `<canvas>` element with `id="constellation-sketcher"`, the size of which can be set through its `width` and `height` attributes. Constellation Sketcher supports drawing to only one canvas at a time.
+When started, Constellation Sketcher looks for a `<canvas>` element with `id="constellation-sketcher"`, the size of which can be set through its `width` and `height` attributes. (Note that Constellation Sketcher works best with a 1:1 aspect ratio. Different aspect ratios will effectively crop the view on both sides of the constellation.) Constellation Sketcher supports drawing to only one canvas at a time.
 
 Drawing can be started via either of two functions:
 
@@ -71,6 +71,8 @@ Constellation Sketcher can be configured through a set of functions. Each config
 * `ConstellationSketcher.setTwinkleAmplitude(twinkleAmplitude)`: Accepts a number which multiplies the amount stars change in magnitude when flickering. The default is `1`.
 
 * `ConstellationSketcher.setTwinkleTimescale(twinkleTimescale)`: Accepts a number of milliseconds. This is the time between updates to the twinkle-based changes in stellar magnitude.
+
+* `ConstellationSketcher.setSizeScale(sizeScale)`: Accepts a number which multiplies the widths of the stars that are drawn. The default is `1`.
 
 * `ConstellationSketcher.setSpeedScale(speedScale)`: Accepts a number which multiplies the speed at which lines grow during animation. The default is `1`.
 

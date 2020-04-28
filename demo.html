@@ -17,7 +17,7 @@
             flex-flow: row wrap;
             justify-content: center;
         }
-        #container div {
+        .controls {
             width: 510px;
             margin-left: 5px;
             margin-right: 5px;
@@ -68,16 +68,17 @@
 </head>
 <body onload="ConstellationSketcher.setConstellation('Orion').sketch()">
 <div id="container">
-    <div>
-        <h3 id="title" style="text-align: center"></h3>
-        <canvas id="constellation-sketcher"
-                width="500"
-                height="500"
-        >
-        </canvas>
-    </div>
+<div>
+    <h3 id="title" style="text-align: center"></h3>
+    <canvas id="constellation-sketcher"
+            width="500"
+            height="500"
+    >
+    </canvas>
+</div>
 
-<div style="display: flex; flex-direction: column; justify-content: center;">
+<div style="display: flex; flex-direction: column; justify-content: center;"
+     class="controls">
     <div class="control-row">
         Select a constellation to draw:
         <select class="custom-select"
