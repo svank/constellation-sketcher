@@ -28,6 +28,8 @@ Drawing can be started via either of two functions:
 
 All drawing, including lines and stellar twinkle, can be cancelled via `ConstellationSketcher.stop()`.
 
+A list of valid constellation names can be accessed via `ConstellationSketcher.constellationNames`.
+
 ## Selecting Constellations
 
 Constellation Sketcher can display a specific constellation on demand, or it can display randomly-selected constellations. This is configured through the functions
@@ -64,21 +66,21 @@ The latter three categories are mutually-exclusive, but *popular* constellations
 
 Constellation Sketcher can be configured through a set of functions. Each configuration function returns `ConstellationSketcher` so that calls can be chained (e.g. `ConstellationSketcher.setSelectionWeightsAll(1).chooseRandomConstellation().setAnimated(false).sketch()`). Configuration values are only guaranteed to affect future calls to `sketch()` or `slideshow()` and may but are not guaranteed to affect any animations currently in progress.
 
-* `ConstellationSketcher.setAnimated(animated)`: Accepts a boolean. If true, constellations are drawn as an animation. If false, they are drawn immediately upon the start of drawing.
+* `ConstellationSketcher.setAnimated(animated)`: Accepts a boolean. If true, constellations are drawn as an animation. If false, they are drawn immediately upon the start of drawing. The default is `true`.
 
-* `ConstellationSketcher.setDrawLines(drawLines)`: Accepts a boolean. If false, lines are not drawn, only stars.
+* `ConstellationSketcher.setDrawLines(drawLines)`: Accepts a boolean. If false, lines are not drawn, only stars. The default is `true`.
 
-* `ConstellationSketcher.setTwinkle(twinkle)`: Accepts a boolean. If true, stars twinkle.
+* `ConstellationSketcher.setTwinkle(twinkle)`: Accepts a boolean. If true, stars twinkle. The default is `true`.
 
 * `ConstellationSketcher.setTwinkleAmplitude(twinkleAmplitude)`: Accepts a number which multiplies the amount stars change in magnitude when flickering. The default is `1`.
 
-* `ConstellationSketcher.setTwinkleTimescale(twinkleTimescale)`: Accepts a number of milliseconds. This is the time between updates to the twinkle-based changes in stellar magnitude.
+* `ConstellationSketcher.setTwinkleTimescale(twinkleTimescale)`: Accepts a number of milliseconds. This is the time between updates to the twinkle-based changes in stellar magnitude. The default is `70`.
 
 * `ConstellationSketcher.setSizeScale(sizeScale)`: Accepts a number which multiplies the widths of the stars that are drawn. The default is `1`.
 
 * `ConstellationSketcher.setSpeedScale(speedScale)`: Accepts a number which multiplies the speed at which lines grow during animation. The default is `1`.
 
-* `ConstellationSketcher.setSlideshowDwellTime(dwellTime)`: Accepts a number of milliseconds. This is the length of the pause during slideshows between the end of drawing one constellation and the beginning of drawing the next.
+* `ConstellationSketcher.setSlideshowDwellTime(dwellTime)`: Accepts a number of milliseconds. This is the length of the pause during slideshows between the end of drawing one constellation and the beginning of drawing the next. The default is `4000`.
 
 * `setCrossFade(doCrossFade, crossFadeTime)`: Accepts up to two arguments. The first is a boolean setting whether or not Constellation Sketcher will fade between constellations. The second, if provided, sets the duration of the fade in milliseconds. The default values are `true` and `750`.
 

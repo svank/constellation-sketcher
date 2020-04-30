@@ -4,31 +4,34 @@ import {randomChoice, extractLinesAtPoint} from './constellation_sketcher_utils.
 
 const state = {
     mode: "uninitialized",
+    
     constellation: "Orion",
     animated: true,
     drawLines: true,
     twinkle: true,
-    twinkleTimescale: 60,
+    twinkleTimescale: 70,
     twinkleAmplitude: 1,
     speedScale: 1,
     sizeScale: 1,
     slideshow: false,
     slideshowDwellTime: 4000,
-    slideshowTimeout: null,
-    frameRequest: null,
     fadeIn: false,
     crossFade: true,
     fadeInTime: 750,
     crossFadeTime: 750,
     weights: {popular: 2, striking: 2, medium: 1, small: 0},
+    
     drawBeginCallback: null,
     drawFrameCompleteCallback: null,
     drawCompleteCallback: null,
+    
     drawState: null,
     oldDrawState: null,
     fadeState: null,
     recentConstellations: [],
     canvasScale: null,
+    slideshowTimeout: null,
+    frameRequest: null,
 };
 
 export function setConstellation(constellation) {
@@ -416,7 +419,7 @@ function startAnimatingALine() {
     
     state.drawState.fraction = 0;
     state.drawState.aniStart = performance.now();
-    state.drawState.aniDuration = Math.max(...lengths) * 7000 / state.speedScale;
+    state.drawState.aniDuration = Math.max(...lengths) * 4000 / state.speedScale;
     
     redrawField();
     
@@ -492,11 +495,9 @@ function redrawField() {
     if (twinkleTimeout()) {
         state.drawState.twinkleDeltaMags = state.drawState.stars.map((data) => {
             const mag = data[2];
-            if (mag < 6)
-                return (10 - mag)
-                    * (Math.random() * 0.15 - 0.075)
-                    * state.twinkleAmplitude;
-            return 0;
+            return (10 - mag)
+                * (Math.random() * 0.15 - 0.075)
+                * state.twinkleAmplitude;
         });
         state.drawState.twinkleTimestamp = performance.now();
     }
