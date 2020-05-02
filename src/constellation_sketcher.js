@@ -261,22 +261,7 @@ function startSketch() {
     
     if (state.animated && state.drawLines) {
         const startLine = randomChoice(lines);
-        let [startLines, linesToDraw] = extractLinesAtPoint(lines, startLine.x1, startLine.y1);
-        
-        // Special case for the only non-contiguous constellation
-        if (state.constellation === "Serpens") {
-            // With x = sx(700) as the dividing line, choose a second starting
-            // point in the other half of the constellation
-            let secondStartLine = randomChoice(lines);
-            const line = 0.7 * state.canvasScale;
-            while ((startLine.x1 > line && secondStartLine.x1 > line)
-                    || (startLine.x1 < line && secondStartLine.x1 < line))
-                secondStartLine = randomChoice(lines);
-            let extraStartLines;
-            [extraStartLines, linesToDraw] = extractLinesAtPoint(linesToDraw, secondStartLine.x1, secondStartLine.y1);
-            startLines.push(...extraStartLines);
-        }
-        
+        const [startLines, linesToDraw] = extractLinesAtPoint(lines, startLine.x1, startLine.y1);
         state.drawState.linesToDraw = linesToDraw;
         state.drawState.linesDrawing = startLines;
     } else
@@ -463,6 +448,12 @@ function drawLineFrame(timestamp) {
             [newLinesDrawing, lines] = extractLinesAtPoint(lines, line.x2, line.y2);
             linesDrawing.push(...newLinesDrawing);
         });
+        if (linesDrawing.length === 0 && lines.length > 0) {
+            // Handle non-connected constellations (e.g. Crux)
+            const startLine = randomChoice(lines);
+            [linesDrawing, lines] = extractLinesAtPoint(lines,
+                startLine.x1, startLine.y1);
+        }
         state.drawState.linesToDraw = lines;
         state.drawState.linesDrawing = linesDrawing;
         state.mode = "waiting";
