@@ -15,6 +15,7 @@ const state = {
     slideshow: false,
     slideshowDwellTime: 4000,
     slideshowTimeout: null,
+    frameRequest: null,
     fadeIn: false,
     crossFade: true,
     fadeInTime: 750,
@@ -76,7 +77,7 @@ export function setDrawLines(drawLines) {
 export function setTwinkle(twinkle) {
     // If twinkle is enabled after a constellation is drawn, start twinkling
     if (twinkle && !state.twinkle && state.mode === "waiting")
-        window.requestAnimationFrame(sketchIsEnded);
+        state.frameRequest = window.requestAnimationFrame(sketchIsEnded);
     state.twinkle = twinkle;
     return this;
 }
@@ -177,6 +178,16 @@ export function slideshow() {
     setup();
     state.slideshow = true;
     startSlideshow();
+}
+
+export function stop() {
+    state.mode = "waiting";
+    if (state.frameRequest !== null) {
+        window.cancelAnimationFrame(state.frameRequest);
+        state.frameRequest = null;
+        state.fadeState = null;
+        state.oldDrawState = null;
+    }
 }
 
 function setup() {
@@ -311,7 +322,9 @@ function fadeIn(timestamp) {
             mainCtx: state.ctx,
             mainDrawState: state.drawState,
         };
-    }
+    } else if (state.mode !== "fading")
+        // The fade has been interrupted
+        return;
     
     // We only need to redraw everything from scratch when the stars twinkle,
     // which isn't every frame. So we draw the old constellation on the main
@@ -357,9 +370,10 @@ function fadeIn(timestamp) {
         state.fadeState = null;
         state.oldDrawState = null;
         state.mode = "waiting";
-        window.requestAnimationFrame(state.animated && state.drawLines ? startAnimatingALine : onSketchEnd);
+        state.frameRequest = window.requestAnimationFrame(
+            state.animated && state.drawLines ? startAnimatingALine : onSketchEnd);
     } else {
-        window.requestAnimationFrame(fadeIn);
+        state.frameRequest = window.requestAnimationFrame(fadeIn);
     }
 }
 
@@ -374,7 +388,7 @@ function sketchIsEnded() {
     if (state.mode === "waiting" && state.twinkle) {
         if (twinkleTimeout())
             redrawField();
-        window.requestAnimationFrame(sketchIsEnded)
+        state.frameRequest = window.requestAnimationFrame(sketchIsEnded)
     }
     if (state.slideshow
         && state.mode === "waiting"
@@ -409,7 +423,7 @@ function startAnimatingALine() {
     // Don't schedule a frame draw if other things are already going on.
     if (state.mode === "waiting") {
         state.mode = "drawing_lines";
-        window.requestAnimationFrame(drawLineFrame);
+        state.frameRequest = window.requestAnimationFrame(drawLineFrame);
     }
 }
 
@@ -465,7 +479,7 @@ function drawLineFrame(timestamp) {
             onSketchEnd();
     } else
         if (state.mode === "drawing_lines")
-            window.requestAnimationFrame(drawLineFrame)
+            state.frameRequest = window.requestAnimationFrame(drawLineFrame)
 }
 
 function twinkleTimeout() {

@@ -26,6 +26,8 @@ Drawing can be started via either of two functions:
 
 * `ConstellationSketcher.slideshow()` will draw constellations one after the other, with a short pause in between. The slideshow will start with the currently-configured constellation and select random constellations after.
 
+All drawing, including lines and stellar twinkle, can be cancelled via `ConstellationSketcher.stop()`.
+
 ## Selecting Constellations
 
 Constellation Sketcher can display a specific constellation on demand, or it can display randomly-selected constellations. This is configured through the functions
