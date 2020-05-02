@@ -184,6 +184,32 @@
     </div>
     
     <div class="control-row">
+        <div>
+            <label for="fade">Fade between constellations:&nbsp;</label>
+            <input type="checkbox"
+                   id="fade"
+                   onclick="ConstellationSketcher.setCrossFade(this.checked)"
+                   checked
+            />
+        </div>
+        
+        <div>
+        Fade duration
+            <br />
+            <input type="range" min="100" max="3000" step="100" value="750" id="fadeTime"
+                   class="custom-range"
+                   style="width: 150px"
+                   oninput="
+                   ConstellationSketcher.setCrossFade(undefined, this.value);
+                   updateDisplay('fadeTime', this.value);
+                   "
+            />
+            <br />
+            <span id="fadeTimeDisplay">750</span>&nbsp;ms
+        </div>
+    </div>
+    
+    <div class="control-row">
         <div>Random selection weights:</div>
         <div>
             Popular

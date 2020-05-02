@@ -78,6 +78,10 @@ Constellation Sketcher can be configured through a set of functions. Each config
 
 * `ConstellationSketcher.setSlideshowDwellTime(dwellTime)`: Accepts a number of milliseconds. This is the length of the pause during slideshows between the end of drawing one constellation and the beginning of drawing the next.
 
+* `setCrossFade(doCrossFade, crossFadeTime)`: Accepts up to two arguments. The first is a boolean setting whether or not Constellation Sketcher will fade between constellations. The second, if provided, sets the duration of the fade in milliseconds. The default values are `true` and `750`.
+
+* `setFadeIn(doFadeIn, fadeInTime)`: Accepts up to two arguments. The first is a boolean setting whether or not Constellation Sketcher will fade in from transparency before drawing its first constellation. The second, if provided, sets the duration of the fade in milliseconds. The default values are `false` and `750`.
+
 * `ConstellationSketcher.setDrawBeginCallback(drawBeginCallback)`: Accepts a function which is called at the beginning of drawing a constellation. The callback function is provided as an argument a CanvasRenderingContext2D for drawing to the canvas.
 
 * `ConstellationSketcher.setDrawFrameCompleteCallback(drawFrameCompleteCallback)`: Accepts a function which is called at the end of drawing each frame. The callback function is provided as arguments a CanvasRenderingContext2D for drawing to the canvas and a boolean indicating whether the whole canvas was cleared and redrawn this frame.

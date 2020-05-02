@@ -3,8 +3,7 @@ import constellationData from "./constellation_data.json";
 import {randomChoice, extractLinesAtPoint} from './constellation_sketcher_utils.js';
 
 const state = {
-    mode: null,
-    superMode: "",
+    mode: "uninitialized",
     constellation: "Orion",
     animated: true,
     drawLines: true,
@@ -13,15 +12,20 @@ const state = {
     twinkleAmplitude: 1,
     speedScale: 1,
     sizeScale: 1,
+    slideshow: false,
     slideshowDwellTime: 4000,
     slideshowTimeout: null,
+    fadeIn: false,
+    crossFade: true,
+    fadeInTime: 750,
+    crossFadeTime: 750,
     weights: {popular: 2, striking: 2, medium: 1, small: 0},
     drawBeginCallback: null,
     drawFrameCompleteCallback: null,
     drawCompleteCallback: null,
-    stars: null,
-    twinkeDeltaMags: null,
-    modeState: null,
+    drawState: null,
+    oldDrawState: null,
+    fadeState: null,
     recentConstellations: [],
     canvasScale: null,
 };
@@ -70,6 +74,9 @@ export function setDrawLines(drawLines) {
 }
 
 export function setTwinkle(twinkle) {
+    // If twinkle is enabled after a constellation is drawn, start twinkling
+    if (twinkle && !state.twinkle && state.mode === "waiting")
+        window.requestAnimationFrame(sketchIsEnded);
     state.twinkle = twinkle;
     return this;
 }
@@ -91,6 +98,22 @@ export function setSpeedScale(speedScale) {
 
 export function setSizeScale(sizeScale) {
     state.sizeScale = sizeScale;
+    return this;
+}
+
+export function setCrossFade(doCrossFade, crossFadeTime) {
+    if (doCrossFade !== undefined)
+        state.crossFade = doCrossFade;
+    if (crossFadeTime !== undefined)
+        state.crossFadeTime = crossFadeTime;
+    return this;
+}
+
+export function setFadeIn(doFadeIn, fadeInTime) {
+    if (doFadeIn !== undefined)
+        state.fadeIn = doFadeIn;
+    if (fadeInTime !== undefined)
+        state.fadeInTime = fadeInTime;
     return this;
 }
 
@@ -141,14 +164,18 @@ export function setDrawCompleteCallback(drawCompleteCallback) {
 }
 
 export function sketch() {
+    if (state.mode !== "waiting" && state.mode !== "uninitialized")
+        return;
     setup();
-    state.superMode = "";
+    state.slideshow = false;
     startSketch();
 }
 
 export function slideshow() {
+    if (state.mode !== "waiting" && state.mode !== "uninitialized")
+        return;
     setup();
-    state.superMode = "slideshow";
+    state.slideshow = true;
     startSlideshow();
 }
 
@@ -158,7 +185,7 @@ function setup() {
         state.slideshowTimeout = null;
     }
     
-    if (state.mode === null) {
+    if (state.mode === "uninitialized") {
         let canvas = document.getElementById("constellation-sketcher");
         state.ctx = canvas.getContext('2d');
         state.width = canvas.width;
@@ -167,7 +194,6 @@ function setup() {
         state.padding = .1 * state.width;
         state.mode = "waiting";
     }
-    clearCanvas();
 }
 
 function clearCanvas() {
@@ -178,7 +204,6 @@ function clearCanvas() {
 
 function startSlideshow() {
     state.slideshowTimeout = null;
-    clearCanvas();
     startSketch();
 }
 
@@ -188,6 +213,20 @@ function startSketch() {
     if (state.recentConstellations.length > 6)
         state.recentConstellations.shift();
     
+    state.oldDrawState = state.drawState;
+    
+    state.drawState = {
+        linesToDraw: [],
+        linesDrawing: [],
+        linesFinished: [],
+        stars: [],
+        twinkleDeltaMags: [],
+        fraction: 0,
+        aniStart: 0,
+        aniDuration: 0,
+        twinkleTimestamp: performance.now(),
+    };
+    
     if (state.drawBeginCallback instanceof Function)
         state.drawBeginCallback(state.ctx);
     
@@ -196,16 +235,12 @@ function startSketch() {
     const sy = (y) => y/1000 * (state.canvasScale - 2 * state.padding) + state.padding + (state.height - state.canvasScale)/2;
     const sv = (v) => v/10
     
-    state.twinkleTimestamp = performance.now();
-    state.stars = [];
-    state.twinkeDeltaMags = [];
     for (let i=0; i<cdat.stars.x.length; i++) {
         const data = [sx(cdat.stars.x[i]),
                       sy(cdat.stars.y[i]),
                       sv(cdat.stars.Vmag[i])]
-        state.stars.push(data);
-        state.twinkeDeltaMags.push(0);
-        drawStar(...data);
+        state.drawState.stars.push(data);
+        state.drawState.twinkleDeltaMags.push(0);
     }
     
     const lines = [];
@@ -238,23 +273,93 @@ function startSketch() {
             startLines.push(...extraStartLines);
         }
         
-        state.modeState = {
-            linesToDraw: linesToDraw,
-            linesDrawing: startLines,
-            linesFinished: []
+        state.drawState.linesToDraw = linesToDraw;
+        state.drawState.linesDrawing = startLines;
+    } else
+        state.drawState.linesFinished = lines;
+    
+    if ((state.oldDrawState === null && state.fadeIn)
+            || (state.oldDrawState !== null && state.crossFade))
+        fadeIn();
+    else {
+        state.mode = "waiting";
+        if (state.animated && state.drawLines)
+            startAnimatingALine();
+        else {
+            redrawField();
+            onSketchEnd();
+        }
+    }
+}
+
+function fadeIn(timestamp) {
+    let fadeIsStarting = false;
+    if (state.fadeState === null) {
+        fadeIsStarting = true;
+        // This is the first time through this function and the
+        // beginning of the fade.
+        state.mode = "fading";
+        timestamp = performance.now();
+        const canvas = document.createElement("canvas");
+        canvas.width = state.width;
+        canvas.height = state.height;
+        state.fadeState = {
+            aniStart: timestamp,
+            accumulatedOpacity: 0,
+            buffer: canvas,
+            bufferCtx: canvas.getContext("2d"),
+            mainCtx: state.ctx,
+            mainDrawState: state.drawState,
         };
-        
-        startAnimatingALine();
+    }
+    
+    // We only need to redraw everything from scratch when the stars twinkle,
+    // which isn't every frame. So we draw the old constellation on the main
+    // canvas and the new constellation on a buffer canvas which is drawn onto
+    // the main canvas with transparency, and on non-twinkle frames we just
+    // redraw that buffer to achieve the required opacity level.
+    if (twinkleTimeout() || fadeIsStarting) {
+        state.fadeState.accumulatedOpacity = 0;
+        if (state.oldDrawState === null)
+            // We're fading in from transparent
+            state.ctx.clearRect(0, 0, state.width, state.height);
+        else {
+            // We're cross-fading from a previous constellation.
+            // We redraw that constellation here
+            state.drawState = state.oldDrawState;
+            drawLineFrame(timestamp);
+            state.drawState = state.fadeState.mainDrawState;
+        }
+        // Update the new star field in the buffer
+        state.ctx = state.fadeState.bufferCtx;
+        drawLineFrame(state.drawState.aniStart);
+        state.ctx = state.fadeState.mainCtx;
+    }
+    // We'll draw the incoming constellation with a time-varying
+    // global alpha value.
+    const aniDuration = state.oldDrawState === null
+                         ? state.fadeInTime
+                         : state.crossFadeTime;
+    let targetOpac = (timestamp - state.fadeState.aniStart) / aniDuration;
+    if (targetOpac > 1) targetOpac = 1;
+    if (targetOpac < 0) targetOpac = 0;
+    // Calculate what opacity we have to draw with to reach our target
+    // opacity, given what's already been drawn.
+    const opac = (targetOpac - state.fadeState.accumulatedOpacity)
+                  / (1 - state.fadeState.accumulatedOpacity);
+    
+    state.ctx.globalAlpha = opac;
+    state.ctx.drawImage(state.fadeState.buffer, 0, 0);
+    state.ctx.globalAlpha = 1;
+    
+    state.fadeState.accumulatedOpacity = targetOpac;
+    if (targetOpac >= 1) {
+        state.fadeState = null;
+        state.oldDrawState = null;
+        state.mode = "waiting";
+        window.requestAnimationFrame(state.animated && state.drawLines ? startAnimatingALine : onSketchEnd);
     } else {
-        state.modeState = {
-            linesToDraw: [],
-            linesDrawing: [],
-            linesFinished: lines
-        };
-        lines.forEach((line) => {
-            drawLine(line.x1, line.x2, line.y1, line.y2);
-        });
-        onSketchEnd();
+        window.requestAnimationFrame(fadeIn);
     }
 }
 
@@ -267,10 +372,11 @@ function onSketchEnd() {
 
 function sketchIsEnded() {
     if (state.mode === "waiting" && state.twinkle) {
-        redrawField();
+        if (twinkleTimeout())
+            redrawField();
         window.requestAnimationFrame(sketchIsEnded)
     }
-    if (state.superMode === "slideshow"
+    if (state.slideshow
         && state.mode === "waiting"
         && state.slideshowTimeout === null) {
         state.slideshowTimeout = setTimeout(() => {
@@ -285,18 +391,20 @@ function sketchIsEnded() {
  * 
  * The main role of this function is to determine the speed at which the lines
  * are drawn, which is scaled by the length of the longest line so that lines
- * always grow at a ~constant rate. state.modeState is configured according
+ * always grow at a ~constant rate. state.drawState is configured according
  * to the speed that is selected.
  */
 function startAnimatingALine() {
-    const lengths = state.modeState.linesDrawing.map((line) => (
+    const lengths = state.drawState.linesDrawing.map((line) => (
         Math.sqrt(Math.pow((line.x2-line.x1)/state.canvasScale, 2)
             + Math.pow((line.y2-line.y1)/state.canvasScale, 2))
     ));
     
-    state.modeState.fraction = 0;
-    state.modeState.aniStart = performance.now();
-    state.modeState.aniDuration = Math.max(...lengths) * 7000 / state.speedScale;
+    state.drawState.fraction = 0;
+    state.drawState.aniStart = performance.now();
+    state.drawState.aniDuration = Math.max(...lengths) * 7000 / state.speedScale;
+    
+    redrawField();
     
     // Don't schedule a frame draw if other things are already going on.
     if (state.mode === "waiting") {
@@ -310,23 +418,23 @@ function startAnimatingALine() {
  * animation when drawing lines.
  */
 function drawLineFrame(timestamp) {
-    if (state.mode !== "drawing_lines")
+    if (state.mode !== "drawing_lines" && state.mode !== "fading")
         return;
     
-    let oldFraction = state.modeState.fraction;
-    let newFraction = (timestamp - state.modeState.aniStart) / state.modeState.aniDuration;
+    let oldFraction = state.drawState.fraction;
+    let newFraction = (timestamp - state.drawState.aniStart) / state.drawState.aniDuration;
     if (newFraction > 1) newFraction = 1;
     if (newFraction < oldFraction) newFraction = oldFraction;
-    state.modeState.fraction = newFraction;
+    state.drawState.fraction = newFraction;
     
     let redrew = false;
-    if (state.twinkle && twinkleTimeout()) {
+    if ((state.twinkle && twinkleTimeout()) || state.mode === "fading") {
         redrawField();
         oldFraction = 0;
         redrew = true;
     }
     
-    state.modeState.linesDrawing.forEach((line) => {
+    state.drawState.linesDrawing.forEach((line) => {
         const dx = line.x2 - line.x1;
         const dy = line.y2 - line.y1;
         const x1 = line.x1 + dx * oldFraction;
@@ -339,34 +447,36 @@ function drawLineFrame(timestamp) {
     if (state.drawFrameCompleteCallback instanceof Function)
         state.drawFrameCompleteCallback(state.ctx, redrew);
     
-    if (newFraction >= 1) {
-        let lines = state.modeState.linesToDraw;
+    if (newFraction >= 1 && state.mode !== "fading") {
+        let lines = state.drawState.linesToDraw;
         let linesDrawing = [];
-        state.modeState.linesFinished.push(...state.modeState.linesDrawing);
-        state.modeState.linesDrawing.forEach((line) => {
+        state.drawState.linesFinished.push(...state.drawState.linesDrawing);
+        state.drawState.linesDrawing.forEach((line) => {
             let newLinesDrawing;
             [newLinesDrawing, lines] = extractLinesAtPoint(lines, line.x2, line.y2);
             linesDrawing.push(...newLinesDrawing);
         });
-        state.modeState.linesToDraw = lines;
-        state.modeState.linesDrawing = linesDrawing;
+        state.drawState.linesToDraw = lines;
+        state.drawState.linesDrawing = linesDrawing;
         state.mode = "waiting";
-        if (state.modeState.linesDrawing.length > 0)
+        if (state.drawState.linesDrawing.length > 0)
             startAnimatingALine();
         else
             onSketchEnd();
     } else
-        window.requestAnimationFrame(drawLineFrame)
+        if (state.mode === "drawing_lines")
+            window.requestAnimationFrame(drawLineFrame)
 }
 
 function twinkleTimeout() {
-    return performance.now() - state.twinkleTimestamp > state.twinkleTimescale;
+    return state.twinkle
+        && (performance.now() - state.drawState.twinkleTimestamp > state.twinkleTimescale);
 }
 
 function redrawField() {
     clearCanvas();
     if (twinkleTimeout()) {
-        state.twinkeDeltaMags = state.stars.map((data) => {
+        state.drawState.twinkleDeltaMags = state.drawState.stars.map((data) => {
             const mag = data[2];
             if (mag < 6)
                 return (10 - mag)
@@ -374,21 +484,23 @@ function redrawField() {
                     * state.twinkleAmplitude;
             return 0;
         });
-        state.twinkleTimestamp = performance.now();
+        state.drawState.twinkleTimestamp = performance.now();
     }
-    state.stars.forEach((data, idx) => {
+    state.drawState.stars.forEach((data, idx) => {
         let [x, y, mag] = data;
-        mag += state.twinkeDeltaMags[idx];
+        mag += state.drawState.twinkleDeltaMags[idx];
         drawStar(x, y, mag);
     });
-    state.modeState.linesFinished.forEach((line) => {
+    state.drawState.linesFinished.forEach((line) => {
         drawLine(line.x1, line.x2, line.y1, line.y2);
     });
 }
 
 function drawStar(x, y, Vmag) {
     const r = (7 - Vmag) * state.canvasScale / 2000 * state.sizeScale + 0.5;
-    const opac = 1 - .15 * (Vmag-1)
+    let opac = 1 - .15 * (Vmag-1);
+    if (opac > 1) opac = 1;
+    if (opac < 0) opac = 0;
     state.ctx.beginPath();
     state.ctx.fillStyle = `rgba(255,255,255,${opac})`;
     state.ctx.arc(x, y, r, 0, Math.PI * 2);
