@@ -14,7 +14,7 @@ Constellation Sketcher can render constellations either immediately or as an ani
 
 I learned while building this that there is simply *no* canonical source for what the constellations look like (that is, which stars to connect to which, and even which stars are included at all!). Constellation Sketcher uses the traditional Western constellations as provided in [Stellarium](http://stellarium.org/). The exact positions and magnitudes of stars are drawn from the [catalog](https://ui.adsabs.harvard.edu/abs/1997A%26A...323L..49P) produced by ESA's [Hipparcos](https://www.cosmos.esa.int/web/hipparcos) mission.
 
-The library weighs in at about 100 kb, most of which is stellar data.
+The library weighs in at about 110 kb, most of which is stellar data.
 
 ## Use
 
@@ -26,7 +26,7 @@ Drawing can be started via either of two functions:
 
 * `ConstellationSketcher.slideshow()` will draw constellations one after the other, with a short pause in between. The slideshow will start with the currently-configured constellation and select random constellations after.
 
-All drawing, including lines and stellar twinkle, can be cancelled via `ConstellationSketcher.stop()`.
+All drawing, including lines and stellar twinkle, can be canceled via `ConstellationSketcher.stop()`.
 
 A list of valid constellation names can be accessed via `ConstellationSketcher.constellationNames`.
 
@@ -40,7 +40,7 @@ Constellation Sketcher can display a specific constellation on demand, or it can
 
 * `ConstellationSketcher.getConstellation()`: Returns the name of the currently set constellation.
 
-When randomly choosing constellations, different weights can be assigned to each of four constellation categories, which have been chosen based on the judgment of this northen-hemisphere author. Category membership is listed at the bottom of this README. The categories are:
+When randomly choosing constellations, different weights can be assigned to each of four constellation categories, which have been chosen based on the judgment of this northern-hemisphere author. Category membership is listed at the bottom of this README. The categories are:
 
 * *Popular*: well-known constellations. Default weight: 2
 
@@ -52,15 +52,17 @@ When randomly choosing constellations, different weights can be assigned to each
 
 The latter three categories are mutually-exclusive, but *popular* constellations are each included in one of the other three groups. A constellation's weight during selection is the largest of the weights assigned to the categories it is a member of. Weights can be set through the following functions, each of which accepts a numeric weight.
 
-* `setSelectionWeightPopular(weight)`
+* `ConstellationSketcher.setSelectionWeightPopular(weight)`
 
-* `setSelectionWeightStriking(weight)`
+* `ConstellationSketcher.setSelectionWeightStriking(weight)`
 
-* `setSelectionWeightMedium(weight)`
+* `ConstellationSketcher.setSelectionWeightMedium(weight)`
 
-* `setSelectionWeightSmall(weight)`
+* `ConstellationSketcher.setSelectionWeightSmall(weight)`
 
-* `setSelectionWeightsAll(weight)`: Assigns the given weight to all categories.
+* `ConstellationSketcher.setSelectionWeightsAll(weight)`: Assigns the given weight to all categories.
+
+Additionally, arrays of the constellations included in each category are accessible via `ConstellationSketcher.categories`, e.g. `ConstellationSketcher.categories.popular`.
 
 ## Configuration
 

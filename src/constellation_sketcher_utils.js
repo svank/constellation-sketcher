@@ -2,6 +2,24 @@ function randomChoice(array) {
     return array[Math.floor(Math.random() * array.length)];
 }
 
+/*
+Accepts an object where the keys are items and the values are weights.
+Returns one randomly-selected item.
+ */
+function randomWeightedChoice(itemWeightsMapping) {
+    let sumOfWeights = 0;
+    for (const item in itemWeightsMapping)
+        sumOfWeights += itemWeightsMapping[item];
+    
+    let choice = Math.random() * sumOfWeights;
+    for (const item in itemWeightsMapping) {
+        if (itemWeightsMapping[item] >= choice) {
+            return item;
+        }
+        choice -= itemWeightsMapping[item];
+    }
+}
+
 function extractLinesAtPoint(lines, x, y) {
     const extractedLines = []
     lines = lines.filter((line) => {
@@ -18,4 +36,4 @@ function extractLinesAtPoint(lines, x, y) {
     return [extractedLines, lines];
 }
 
-export {randomChoice, extractLinesAtPoint}
+export {randomChoice, randomWeightedChoice, extractLinesAtPoint}

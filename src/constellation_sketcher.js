@@ -1,6 +1,6 @@
 import constellationCategories from "./constellation_categories.json";
 import constellationData from "./constellation_data.json";
-import {randomChoice, extractLinesAtPoint} from './constellation_sketcher_utils.js';
+import {randomChoice, randomWeightedChoice, extractLinesAtPoint} from './constellation_sketcher_utils.js';
 
 const state = {
     mode: "uninitialized",
@@ -51,18 +51,8 @@ export function chooseRandomConstellation() {
     state.recentConstellations.forEach(
         (constellation) => weights[constellation] = 0);
     
-    let sumOfWeights = 0;
-    for (const constellation in weights)
-        sumOfWeights += weights[constellation];
-    
-    let choice = Math.random() * sumOfWeights;
-    for (const constellation in weights) {
-        if (weights[constellation] >= choice) {
-            state.constellation = constellation;
-            return this;
-        }
-        choice -= weights[constellation];
-    }
+    state.constellation = randomWeightedChoice(weights);
+    return this;
 }
 
 export const getConstellation = () => state.constellation;
@@ -334,7 +324,7 @@ function fadeIn(timestamp) {
     // canvas and the new constellation on a buffer canvas which is drawn onto
     // the main canvas with transparency, and on non-twinkle frames we just
     // redraw that buffer to achieve the required opacity level.
-    if (twinkleTimeout() || fadeIsStarting) {
+    if (twinkleIsTimedOut() || fadeIsStarting) {
         state.fadeState.accumulatedOpacity = 0;
         if (state.oldDrawState === null)
             // We're fading in from transparent
@@ -389,7 +379,7 @@ function onSketchEnd() {
 
 function sketchIsEnded() {
     if (state.mode === "waiting" && state.twinkle) {
-        if (twinkleTimeout())
+        if (twinkleIsTimedOut())
             redrawField();
         state.frameRequest = window.requestAnimationFrame(sketchIsEnded)
     }
@@ -445,7 +435,7 @@ function drawLineFrame(timestamp) {
     state.drawState.fraction = newFraction;
     
     let redrew = false;
-    if ((state.twinkle && twinkleTimeout()) || state.mode === "fading") {
+    if ((state.twinkle && twinkleIsTimedOut()) || state.mode === "fading") {
         redrawField();
         oldFraction = 0;
         redrew = true;
@@ -485,14 +475,14 @@ function drawLineFrame(timestamp) {
             state.frameRequest = window.requestAnimationFrame(drawLineFrame)
 }
 
-function twinkleTimeout() {
+function twinkleIsTimedOut() {
     return state.twinkle
         && (performance.now() - state.drawState.twinkleTimestamp > state.twinkleTimescale);
 }
 
 function redrawField() {
     clearCanvas();
-    if (twinkleTimeout()) {
+    if (twinkleIsTimedOut()) {
         state.drawState.twinkleDeltaMags = state.drawState.stars.map((data) => {
             const mag = data[2];
             return (10 - mag)
@@ -532,3 +522,4 @@ function drawLine(x1, x2, y1, y2) {
 }
 
 export const constellationNames = Object.keys(constellationData);
+export {constellationCategories as categories};
