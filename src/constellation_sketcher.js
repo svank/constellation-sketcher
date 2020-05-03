@@ -161,18 +161,18 @@ export function setDrawCompleteCallback(drawCompleteCallback) {
 }
 
 export function sketch() {
+    state.slideshow = false;
+    setup();
     if (state.mode !== "waiting" && state.mode !== "uninitialized")
         return;
-    setup();
-    state.slideshow = false;
     startSketch();
 }
 
 export function slideshow() {
+    state.slideshow = true;
+    setup();
     if (state.mode !== "waiting" && state.mode !== "uninitialized")
         return;
-    setup();
-    state.slideshow = true;
     startSlideshow();
 }
 
