@@ -35,7 +35,7 @@ import * as ConstellationSketcher from 'constellation-sketcher';
 
 Alternatively, you can include the JS bundle file directly in a `script` tag:
 ```
-<script src="https://unpkg.com/constellation-sketcher@1.0.0/dist/constellation_sketcher.bundle.js"></script>
+<script src="https://unpkg.com/constellation-sketcher@^1.0.0/dist/constellation_sketcher.bundle.js"></script>
 ```
 
 ## Use
