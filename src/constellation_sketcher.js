@@ -309,7 +309,9 @@ function fadeIn(timestamp) {
     // canvas and the new constellation on a buffer canvas which is drawn onto
     // the main canvas with transparency, and on non-twinkle frames we just
     // redraw that buffer to achieve the required opacity level.
+    let redrew = false;
     if (twinkleIsTimedOut() || fadeIsStarting) {
+        redrew = true;
         state.fadeState.accumulatedOpacity = 0;
         if (state.oldDrawState === null)
             // We're fading in from transparent
@@ -326,6 +328,10 @@ function fadeIn(timestamp) {
         drawLineFrame(state.drawState.aniStart);
         state.ctx = state.fadeState.mainCtx;
     }
+    
+    if (state.drawFrameCompleteCallback instanceof Function)
+        state.drawFrameCompleteCallback(state.ctx, redrew);
+    
     // We'll draw the incoming constellation with a time-varying
     // global alpha value.
     const aniDuration = state.oldDrawState === null
@@ -364,8 +370,11 @@ function onSketchEnd() {
 
 function sketchIsEnded() {
     if (state.mode === "waiting" && state.twinkle) {
-        if (twinkleIsTimedOut())
+        if (twinkleIsTimedOut()) {
             redrawField();
+            if (state.drawFrameCompleteCallback instanceof Function)
+                state.drawFrameCompleteCallback(state.ctx, true);
+        }
         state.frameRequest = window.requestAnimationFrame(sketchIsEnded)
     }
     if (state.slideshow
