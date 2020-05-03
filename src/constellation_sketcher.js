@@ -181,6 +181,10 @@ export function stop() {
         state.fadeState = null;
         state.oldDrawState = null;
     }
+    if (state.slideshowTimeout !== null) {
+        clearTimeout(state.slideshowTimeout);
+        state.slideshowTimeout = null;
+    }
 }
 
 function setup() {
