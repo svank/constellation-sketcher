@@ -61,8 +61,8 @@
             document.getElementById(id + "Display").innerHTML = value;
         }
         
-        ConstellationSketcher.setDrawBeginCallback(() => {
-            document.getElementById("title").innerHTML = ConstellationSketcher.getConstellation();
+        ConstellationSketcher.setDrawBeginCallback((_, constellation) => {
+            document.getElementById("title").innerHTML = constellation;
         });
     </script>
 </head>

@@ -108,11 +108,11 @@ Constellation Sketcher can be configured through a set of functions. Each config
 
 * `setFadeIn(doFadeIn, fadeInTime)`: Accepts up to two arguments. The first is a boolean setting whether or not Constellation Sketcher will fade in from transparency before drawing its first constellation. The second, if provided, sets the duration of the fade in milliseconds. The default values are `false` and `750`.
 
-* `ConstellationSketcher.setDrawBeginCallback(drawBeginCallback)`: Accepts a function which is called at the beginning of drawing a constellation. The callback function is provided as an argument a CanvasRenderingContext2D for drawing to the canvas.
+* `ConstellationSketcher.setDrawBeginCallback(drawBeginCallback)`: Accepts a function which is called at the beginning of drawing a constellation. The callback function is provided as arguments a CanvasRenderingContext2D for drawing to the canvas and the name of the current constellation.
 
-* `ConstellationSketcher.setDrawFrameCompleteCallback(drawFrameCompleteCallback)`: Accepts a function which is called at the end of drawing each frame. The callback function is provided as arguments a CanvasRenderingContext2D for drawing to the canvas and a boolean indicating whether the whole canvas was cleared and redrawn this frame.
+* `ConstellationSketcher.setDrawFrameCompleteCallback(drawFrameCompleteCallback)`: Accepts a function which is called at the end of drawing each frame. The callback function is provided as arguments a CanvasRenderingContext2D for drawing to the canvas, a boolean indicating whether the whole canvas was cleared and redrawn this frame, and the name of the current constellation.
 
-* `ConstellationSketcher.setDrawCompleteCallback(drawCompleteCallback)`: Accepts a function which is called at the end of drawing a constellation. The callback function is provided as an argument a CanvasRenderingContext2D for drawing to the canvas.
+* `ConstellationSketcher.setDrawCompleteCallback(drawCompleteCallback)`: Accepts a function which is called at the end of drawing a constellation. The callback function is provided as arguments a CanvasRenderingContext2D for drawing to the canvas and the name of the current constellation.
 
 ## Constellation Categories
 

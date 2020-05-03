@@ -146,17 +146,21 @@ export function setSelectionWeightSmall(weight) {
 }
 
 export function setDrawBeginCallback(drawBeginCallback) {
-    state.drawBeginCallback = drawBeginCallback;
+    state.drawBeginCallback =
+        (ctx) => drawBeginCallback(ctx, state.constellation);
     return this;
 }
 
 export function setDrawFrameCompleteCallback(drawFrameCompleteCallback) {
-    state.drawFrameCompleteCallback = drawFrameCompleteCallback;
+    state.drawFrameCompleteCallback =
+        (ctx, redrew) =>
+            drawFrameCompleteCallback(ctx, redrew, state.constellation);
     return this;
 }
 
 export function setDrawCompleteCallback(drawCompleteCallback) {
-    state.drawCompleteCallback = drawCompleteCallback;
+    state.drawCompleteCallback =
+        (ctx) => drawCompleteCallback(ctx, state.constellation);
     return this;
 }
 
