@@ -1,3 +1,4 @@
+import constellationCategories from "./constellation_categories.json";
 import constellationData from "./constellation_data.json";
 import {randomChoice, extractLinesAtPoint} from './constellation_sketcher_utils.js';
 
@@ -13,12 +14,14 @@ const state = {
     speedScale: 1,
     slideshowDwellTime: 4000,
     slideshowTimeout: null,
+    weights: {popular: 2, striking: 2, medium: 1, small: 0},
     drawBeginCallback: null,
     drawFrameCompleteCallback: null,
     drawCompleteCallback: null,
     stars: null,
     twinkeDeltaMags: null,
     modeState: null,
+    recentConstellations: [],
 };
 
 export function setConstellation(constellation) {
@@ -27,8 +30,29 @@ export function setConstellation(constellation) {
 }
 
 export function chooseRandomConstellation() {
-    state.constellation = randomChoice(constellationNames);
-    return this;
+    const weights = {};
+    for (const category in constellationCategories) {
+        const weight = state.weights[category];
+        for (const constellation of constellationCategories[category])
+            weights[constellation] = Math.max(weights[constellation] || 0, weight);
+    }
+    
+    // Don't repeat recent constellations
+    state.recentConstellations.forEach(
+        (constellation) => weights[constellation] = 0);
+    
+    let sumOfWeights = 0;
+    for (const constellation in weights)
+        sumOfWeights += weights[constellation];
+    
+    let choice = Math.random() * sumOfWeights;
+    for (const constellation in weights) {
+        if (weights[constellation] >= choice) {
+            state.constellation = constellation;
+            return this;
+        }
+        choice -= weights[constellation];
+    }
 }
 
 export const getConstellation = () => state.constellation;
@@ -65,6 +89,32 @@ export function setSpeedScale(speedScale) {
 
 export function setSlideshowDwellTime(dwellTime) {
     state.slideshowDwellTime = dwellTime;
+    return this;
+}
+
+export function setSelectionWeightsAll(weight) {
+    for (let key in state.weights)
+        state.weights[key] = weight;
+    return this;
+}
+
+export function setSelectionWeightPopular(weight) {
+    state.weights.popular = weight;
+    return this;
+}
+
+export function setSelectionWeightStriking(weight) {
+    state.weights.striking = weight;
+    return this;
+}
+
+export function setSelectionWeightMedium(weight) {
+    state.weights.medium = weight;
+    return this;
+}
+
+export function setSelectionWeightSmall(weight) {
+    state.weights.small = weight;
     return this;
 }
 
@@ -125,6 +175,11 @@ function startSlideshow() {
 }
 
 function startSketch() {
+    // Track recent constellations
+    state.recentConstellations.push(state.constellation);
+    if (state.recentConstellations.length > 6)
+        state.recentConstellations.shift();
+    
     if (state.drawBeginCallback instanceof Function)
         state.drawBeginCallback(state.ctx);
     

@@ -183,6 +183,34 @@
     </div>
     
     <div class="control-row">
+        <div>Random selection weights:</div>
+        <div>
+            Popular
+            <input type="text" class="form-control" id="popular" value="2"
+                   oninput="ConstellationSketcher.setSelectionWeightPopular(this.value)"
+            />
+        </div>
+        <div>
+            Strking
+            <input type="text" class="form-control" id="striking" value="2"
+                   oninput="ConstellationSketcher.setSelectionWeightStriking(this.value)"
+            />
+        </div>
+        <div>
+            Medium
+            <input type="text" class="form-control" id="medium" value="1"
+                   oninput="ConstellationSketcher.setSelectionWeightMedium(this.value)"
+            />
+        </div>
+        <div>
+            Small
+            <input type="text" class="form-control" id="small" value="0"
+                   oninput="ConstellationSketcher.setSelectionWeightSmall(this.value)"
+            />
+        </div>
+    </div>
+    
+    <div class="control-row">
         <button type="button"
                 class="btn btn-primary"
                 onclick="setConfiguration(); ConstellationSketcher.sketch();"

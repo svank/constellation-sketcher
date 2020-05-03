@@ -26,13 +26,41 @@ Drawing can be started via either of two functions:
 
 * `ConstellationSketcher.slideshow()` will draw constellations one after the other, with a short pause in between. The slideshow will start with the currently-configured constellation and select random constellations after.
 
-Constellation Sketcher can be configured through a set of functions. Each configuration function returns `ConstellationSketcher` so that calls can be chained (e.g. `ConstellationSketcher.chooseRandomConstellation().setAnimated(false).sketch()`). Configuration values are only guaranteed to affect future calls to `sketch()` or `slideshow()` and may but are not guaranteed to affect any animations currently in progress.
+## Selecting Constellations
+
+Constellation Sketcher can display a specific constellation on demand, or it can display randomly-selected constellations. This is configured through the functions
 
 * `ConstellationSketcher.setConstellation(constellation)`: Sets the name of the constellation that will be drawn next.
 
 * `ConstellationSketcher.chooseRandomConstellation()`: Randomly selects the next constellation to be drawn.
 
-* `ConstellationSketcher.getConstellation()`: Returns the name of the last constellation set.
+* `ConstellationSketcher.getConstellation()`: Returns the name of the currently set constellation.
+
+When randomly choosing constellations, different weights can be assigned to each of four constellation categories, which have been chosen based on the judgment of this northen-hemisphere author. Category membership is listed at the bottom of this README. The categories are:
+
+* *Popular*: well-known constellations. Default weight: 2
+
+* *Striking*: constellations that generally are large, have a more complex shape, and/or include a high density of background stars within the view. Default weight: 2
+
+* *Small*: very simple constellations, generally only one or two lines. Default weight: 1
+
+* *Medium*: constellations that are neither *small* nor *striking*. Default weight: 0
+
+The latter three categories are mutually-exclusive, but *popular* constellations are each included in one of the other three groups. A constellation's weight during selection is the largest of the weights assigned to the categories it is a member of. Weights can be set through the following functions, each of which accepts a numeric weight.
+
+* `setSelectionWeightPopular(weight)`
+
+* `setSelectionWeightStriking(weight)`
+
+* `setSelectionWeightMedium(weight)`
+
+* `setSelectionWeightSmall(weight)`
+
+* `setSelectionWeightsAll(weight)`: Assigns the given weight to all categories.
+
+## Configuration
+
+Constellation Sketcher can be configured through a set of functions. Each configuration function returns `ConstellationSketcher` so that calls can be chained (e.g. `ConstellationSketcher.setSelectionWeightsAll(1).chooseRandomConstellation().setAnimated(false).sketch()`). Configuration values are only guaranteed to affect future calls to `sketch()` or `slideshow()` and may but are not guaranteed to affect any animations currently in progress.
 
 * `ConstellationSketcher.setAnimated(animated)`: Accepts a boolean. If true, constellations are drawn as an animation. If false, they are drawn immediately upon the start of drawing.
 
@@ -53,3 +81,42 @@ Constellation Sketcher can be configured through a set of functions. Each config
 * `ConstellationSketcher.setDrawFrameCompleteCallback(drawFrameCompleteCallback)`: Accepts a function which is called at the end of drawing each frame. The callback function is provided as arguments a CanvasRenderingContext2D for drawing to the canvas and a boolean indicating whether the whole canvas was cleared and redrawn this frame.
 
 * `ConstellationSketcher.setDrawCompleteCallback(drawCompleteCallback)`: Accepts a function which is called at the end of drawing a constellation. The callback function is provided as an argument a CanvasRenderingContext2D for drawing to the canvas.
+
+## Constellation Categories
+
+These categories are described in the "Selecting Constellations" section above.
+
+Popular | | | | (19 total) |
+---|---|---|---|---
+Andromeda | Aquarius | Aquila | Cancer | Canis Major
+Capricornus | Cassiopeia | Centaurus | Cygnus | Draco
+Gemini | Hydra | Orion | Pegasus | Sagittarius
+Scorpius | Taurus | Ursa Major | Ursa Minor
+
+Striking | | | | (22 total) |
+---|---|---|---|---
+Aquarius | Canis Major | Carina | Centaurus | Cetus
+Cygnus | Draco | Eridanus | Hercules | Hydra
+Lupus | Monoceros | Orion | Pegasus | Phoenix
+Pisces | Sagittarius | Scorpius | Serpens | Taurus
+Ursa Major | Virgo
+
+Medium | | | | (39 total) |
+---|---|---|---|---
+Andromeda | Aquila | Ara | Aries | Auriga
+Bootes | Camelopardalis | Cancer | Capricornus | Cassiopeia
+Cepheus | Columba | Corona Australis | Corona Borealis | Corvus
+Crater | Crux | Delphinus | Dorado | Gemini
+Grus | Hydrus | Lacerta | Leo | Leo Minor
+Lepus | Libra | Lynx | Lyra | Ophiuchus
+Pavo | Perseus | Piscis Austrinus | Puppis | Sculptor
+Scutum | Ursa Minor | Vela | Volans
+
+Small | | | | (27 total) |
+---|---|---|---|---
+Antlia | Apus | Caelum | Canes Venatici | Canis Minor
+Chamaeleon | Circinus | Coma Berenices | Equuleus | Fornax
+Horologium | Indus | Mensa | Microscopium | Musca
+Norma | Octans | Pictor | Pyxis | Reticulum
+Sagitta | Sextans | Telescopium | Triangulum | Triangulum Australe
+Tucana | Vulpecula
