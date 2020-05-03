@@ -333,9 +333,6 @@ function fadeIn(timestamp) {
         state.ctx = state.fadeState.mainCtx;
     }
     
-    if (state.drawFrameCompleteCallback instanceof Function)
-        state.drawFrameCompleteCallback(state.ctx, redrew);
-    
     // We'll draw the incoming constellation with a time-varying
     // global alpha value.
     const aniDuration = state.oldDrawState === null
@@ -352,8 +349,8 @@ function fadeIn(timestamp) {
     state.ctx.globalAlpha = opac;
     state.ctx.drawImage(state.fadeState.buffer, 0, 0);
     state.ctx.globalAlpha = 1;
-    
     state.fadeState.accumulatedOpacity = targetOpac;
+    
     if (targetOpac >= 1) {
         state.fadeState = null;
         state.oldDrawState = null;
