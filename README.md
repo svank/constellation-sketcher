@@ -1,5 +1,7 @@
 # Constellation Sketcher
 
+[![NPM](https://img.shields.io/npm/v/constellation-sketcher.svg)](https://www.npmjs.com/package/constellation-sketcher) 
+
 A small library that animates the drawing of constellations. Originally designed to be a nice thing to watch while waiting on a long-running task (i.e. more than just a spinner).
 
 [Live demo](https://samvankooten.net/constellation_sketcher)
