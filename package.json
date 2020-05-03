@@ -1,18 +1,14 @@
 {
   "name": "constellation-sketcher",
-  "version": "1.0.0",
-  
+  "version": "1.0.1",
   "description": "Library for drawing constellations",
   "homepage": "https://github.com/svank/constellation-sketcher",
   "repository": "github:svank/constellation-sketcher",
   "author": "Sam Van Kooten",
   "license": "MIT",
-  
   "main": "dist/constellation_sketcher.bundle.js",
   "module": "dist/constellation_sketcher.module.js",
-  
   "sideEffects": false,
-  
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
     "clean": "rm dist/*",
@@ -22,7 +18,6 @@
     "build-dev": "webpack --config webpack.dev.js",
     "watch": "webpack --watch --config webpack.dev.js"
   },
-  
   "devDependencies": {
     "@babel/core": "^7.9.6",
     "@babel/preset-env": "^7.9.6",
@@ -32,6 +27,5 @@
     "webpack-cli": "^3.3.11",
     "webpack-merge": "^4.2.2"
   },
-  
   "dependencies": {}
 }
