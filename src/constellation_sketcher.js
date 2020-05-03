@@ -34,6 +34,9 @@ const state = {
     frameRequest: null,
 };
 
+const defaults = Object.assign({}, state);
+defaults.weights = JSON.parse(JSON.stringify(state.weights));
+
 export function setConstellation(constellation) {
     state.constellation = constellation;
     return this;
@@ -185,6 +188,12 @@ export function stop() {
         clearTimeout(state.slideshowTimeout);
         state.slideshowTimeout = null;
     }
+}
+
+export function reset() {
+    stop();
+    Object.assign(state, defaults);
+    state.weights = JSON.parse(JSON.stringify(defaults.weights));
 }
 
 function setup() {

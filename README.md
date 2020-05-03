@@ -46,7 +46,7 @@ Drawing can be started via either of two functions:
 
 * `ConstellationSketcher.slideshow()` will draw constellations one after the other, with a short pause in between. The slideshow will start with the currently-configured constellation and select random constellations after.
 
-All drawing, including lines and stellar twinkle, can be canceled via `ConstellationSketcher.stop()`.
+All drawing, including lines and stellar twinkle, can be canceled via `ConstellationSketcher.stop()`. ConstellationSketcher's state can be reset with `ConstellationSketcher.reset()`---useful if the `<canvas>` element is removed and later replaced.
 
 A list of valid constellation names can be accessed via `ConstellationSketcher.constellationNames`.
 
