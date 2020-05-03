@@ -219,7 +219,6 @@ function setup() {
 
 function clearCanvas() {
     state.ctx.fillStyle = 'rgb(0, 0, 0)';
-    state.ctx.strokeStyle = 'rgba(255, 0, 0, 0)';
     state.ctx.fillRect(0, 0, state.width, state.height);
 }
 
@@ -418,8 +417,6 @@ function startAnimatingALine() {
     state.drawState.fraction = 0;
     state.drawState.aniStart = performance.now();
     state.drawState.aniDuration = Math.max(...lengths) * 4000 / state.speedScale;
-    
-    redrawField();
     
     // Don't schedule a frame draw if other things are already going on.
     if (state.mode === "waiting") {
