@@ -1,0 +1,7 @@
+.idea
+node_modules
+constellation_data
+images
+demo.html
+demo_barebones.html
+*.tgz

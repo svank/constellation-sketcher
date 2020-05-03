@@ -5,8 +5,9 @@ module.exports = {
   output: {
     filename: 'constellation_sketcher.bundle.js',
     path: path.resolve(__dirname, 'dist'),
-    libraryTarget: 'var',
+    libraryTarget: 'umd',
     library: 'ConstellationSketcher',
+    umdNamedDefine: true,
   },
   module: {
     rules: [
