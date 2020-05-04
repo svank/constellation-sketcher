@@ -4,6 +4,8 @@
 
 A small library that animates the drawing of constellations. Originally designed to be a nice thing to watch while waiting on a long-running task (i.e. more than just a spinner).
 
+A React component is available: [github](https://github.com/svank/react-constellation-sketcher), [npm](https://www.npmjs.com/package/react-constellation-sketcher)
+
 [Live demo](https://samvankooten.net/constellation_sketcher)
 
 Static screenshot:
