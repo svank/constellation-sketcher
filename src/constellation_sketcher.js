@@ -5,7 +5,7 @@ import {randomChoice, randomWeightedChoice, extractLinesAtPoint} from './constel
 const state = {
     mode: "uninitialized",
     
-    constellation: "Orion",
+    nextConstellation: "Orion",
     animated: true,
     drawLines: true,
     twinkle: true,
@@ -38,7 +38,7 @@ const defaults = Object.assign({}, state);
 defaults.weights = JSON.parse(JSON.stringify(state.weights));
 
 export function setConstellation(constellation) {
-    state.constellation = constellation;
+    state.nextConstellation = constellation;
     return this;
 }
 
@@ -54,11 +54,13 @@ export function chooseRandomConstellation() {
     state.recentConstellations.forEach(
         (constellation) => weights[constellation] = 0);
     
-    state.constellation = randomWeightedChoice(weights);
+    state.nextConstellation = randomWeightedChoice(weights);
     return this;
 }
 
-export const getConstellation = () => state.constellation;
+export const getConstellation = () => state.drawState === null ? null : state.drawState.constellation;
+
+export const getNextConstellation = () => state.nextConstellation;
 
 export function setAnimated(animated) {
     state.animated = animated;
@@ -147,20 +149,20 @@ export function setSelectionWeightSmall(weight) {
 
 export function setDrawBeginCallback(drawBeginCallback) {
     state.drawBeginCallback =
-        (ctx) => drawBeginCallback(ctx, state.constellation);
+        (ctx) => drawBeginCallback(ctx, state.drawState.constellation);
     return this;
 }
 
 export function setDrawFrameCompleteCallback(drawFrameCompleteCallback) {
     state.drawFrameCompleteCallback =
         (ctx, redrew) =>
-            drawFrameCompleteCallback(ctx, redrew, state.constellation);
+            drawFrameCompleteCallback(ctx, redrew, state.drawState.constellation);
     return this;
 }
 
 export function setDrawCompleteCallback(drawCompleteCallback) {
     state.drawCompleteCallback =
-        (ctx) => drawCompleteCallback(ctx, state.constellation);
+        (ctx) => drawCompleteCallback(ctx, state.drawState.constellation);
     return this;
 }
 
@@ -229,13 +231,14 @@ function startSlideshow() {
 
 function startSketch() {
     // Track recent constellations
-    state.recentConstellations.push(state.constellation);
+    state.recentConstellations.push(state.nextConstellation);
     if (state.recentConstellations.length > 6)
         state.recentConstellations.shift();
     
     state.oldDrawState = state.drawState;
     
     state.drawState = {
+        constellation: state.nextConstellation,
         linesToDraw: [],
         linesDrawing: [],
         linesFinished: [],
@@ -247,10 +250,15 @@ function startSketch() {
         twinkleTimestamp: performance.now(),
     };
     
+    if (state.slideshow)
+        chooseRandomConstellation();
+    else
+        state.nextConstellation = null;
+    
     if (state.drawBeginCallback instanceof Function)
         state.drawBeginCallback(state.ctx);
     
-    const cdat = constellationData[state.constellation];
+    const cdat = constellationData[state.drawState.constellation];
     const sx = (x) => x/1000 * (state.canvasScale - 2 * state.padding) + state.padding + (state.width - state.canvasScale)/2;
     const sy = (y) => y/1000 * (state.canvasScale - 2 * state.padding) + state.padding + (state.height - state.canvasScale)/2;
     const sv = (v) => v/10
@@ -325,9 +333,7 @@ function fadeIn(timestamp) {
     // canvas and the new constellation on a buffer canvas which is drawn onto
     // the main canvas with transparency, and on non-twinkle frames we just
     // redraw that buffer to achieve the required opacity level.
-    let redrew = false;
     if (twinkleIsTimedOut() || fadeIsStarting) {
-        redrew = true;
         state.fadeState.accumulatedOpacity = 0;
         if (state.oldDrawState === null)
             // We're fading in from transparent
@@ -394,7 +400,6 @@ function sketchIsEnded() {
         && state.mode === "waiting"
         && state.slideshowTimeout === null) {
         state.slideshowTimeout = setTimeout(() => {
-            chooseRandomConstellation();
             startSlideshow();
         }, state.slideshowDwellTime);
     }

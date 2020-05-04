@@ -60,7 +60,9 @@ Constellation Sketcher can display a specific constellation on demand, or it can
 
 * `ConstellationSketcher.chooseRandomConstellation()`: Randomly selects the next constellation to be drawn.
 
-* `ConstellationSketcher.getConstellation()`: Returns the name of the currently set constellation.
+* `ConstellationSketcher.getConstellation()`: Returns the name of the currently shown constellation.
+
+* `ConstellationSketcher.getNextConstellation()`: Returns the name of the next constellation to be shown, as set via `setConstellation()` or `chooseRandomConstellation()`, or `null` if no future constellation is configured. (During slideshows, future constellations are set automatically.)
 
 When randomly choosing constellations, different weights can be assigned to each of four constellation categories, which have been chosen based on the judgment of this northern-hemisphere author. Category membership is listed at the bottom of this README. The categories are:
 
