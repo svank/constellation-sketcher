@@ -47,7 +47,8 @@ export function chooseRandomConstellation() {
     for (const category in constellationCategories) {
         const weight = state.weights[category];
         for (const constellation of constellationCategories[category])
-            weights[constellation] = Math.max(weights[constellation] || 0, weight);
+            weights[constellation] = Math.max(
+                weights[constellation] || 0, weight);
     }
     
     // Don't repeat recent constellations
@@ -58,7 +59,8 @@ export function chooseRandomConstellation() {
     return this;
 }
 
-export const getConstellation = () => state.drawState === null ? null : state.drawState.constellation;
+export const getConstellation = () =>
+    state.drawState === null ? null : state.drawState.constellation;
 
 export const getNextConstellation = () => state.nextConstellation;
 
@@ -156,7 +158,8 @@ export function setDrawBeginCallback(drawBeginCallback) {
 export function setDrawFrameCompleteCallback(drawFrameCompleteCallback) {
     state.drawFrameCompleteCallback =
         (ctx, redrew) =>
-            drawFrameCompleteCallback(ctx, redrew, state.drawState.constellation);
+            drawFrameCompleteCallback(
+                ctx, redrew, state.drawState.constellation);
     return this;
 }
 
@@ -259,8 +262,12 @@ function startSketch() {
         state.drawBeginCallback(state.ctx);
     
     const cdat = constellationData[state.drawState.constellation];
-    const sx = (x) => x/1000 * (state.canvasScale - 2 * state.padding) + state.padding + (state.width - state.canvasScale)/2;
-    const sy = (y) => y/1000 * (state.canvasScale - 2 * state.padding) + state.padding + (state.height - state.canvasScale)/2;
+    const sx = (x) => (x/1000 * (state.canvasScale - 2 * state.padding)
+                       + state.padding
+                       + (state.width - state.canvasScale)/2);
+    const sy = (y) => (y/1000 * (state.canvasScale - 2 * state.padding)
+                       + state.padding
+                       + (state.height - state.canvasScale)/2);
     const sv = (v) => v/10
     
     for (let i=0; i<cdat.stars.x.length; i++) {
@@ -285,7 +292,8 @@ function startSketch() {
     
     if (state.animated && state.drawLines) {
         const startLine = randomChoice(lines);
-        const [startLines, linesToDraw] = extractLinesAtPoint(lines, startLine.x1, startLine.y1);
+        const [startLines, linesToDraw] = extractLinesAtPoint(
+            lines, startLine.x1, startLine.y1);
         state.drawState.linesToDraw = linesToDraw;
         state.drawState.linesDrawing = startLines;
     } else
@@ -374,7 +382,9 @@ function fadeIn(timestamp) {
         state.oldDrawState = null;
         state.mode = "waiting";
         state.frameRequest = window.requestAnimationFrame(
-            state.animated && state.drawLines ? startAnimatingALine : onSketchEnd);
+            state.animated && state.drawLines
+                ? startAnimatingALine
+                : onSketchEnd);
     } else {
         state.frameRequest = window.requestAnimationFrame(fadeIn);
     }
@@ -421,7 +431,7 @@ function startAnimatingALine() {
     
     state.drawState.fraction = 0;
     state.drawState.aniStart = performance.now();
-    state.drawState.aniDuration = Math.max(...lengths) * 4000 / state.speedScale;
+    state.drawState.aniDuration = Math.max(...lengths) * 4000/state.speedScale;
     
     // Don't schedule a frame draw if other things are already going on.
     if (state.mode === "waiting") {
@@ -439,7 +449,8 @@ function drawLineFrame(timestamp) {
         return;
     
     let oldFraction = state.drawState.fraction;
-    let newFraction = (timestamp - state.drawState.aniStart) / state.drawState.aniDuration;
+    let newFraction = ((timestamp - state.drawState.aniStart)
+                       / state.drawState.aniDuration);
     if (newFraction > 1) newFraction = 1;
     if (newFraction < oldFraction) newFraction = oldFraction;
     state.drawState.fraction = newFraction;
@@ -470,7 +481,8 @@ function drawLineFrame(timestamp) {
         state.drawState.linesFinished.push(...state.drawState.linesDrawing);
         state.drawState.linesDrawing.forEach((line) => {
             let newLinesDrawing;
-            [newLinesDrawing, lines] = extractLinesAtPoint(lines, line.x2, line.y2);
+            [newLinesDrawing, lines] = extractLinesAtPoint(
+                lines, line.x2, line.y2);
             linesDrawing.push(...newLinesDrawing);
         });
         if (linesDrawing.length === 0 && lines.length > 0) {
@@ -492,14 +504,14 @@ function drawLineFrame(timestamp) {
 }
 
 function twinkleIsTimedOut() {
-    return state.twinkle
-        && (performance.now() - state.drawState.twinkleTimestamp > state.twinkleTimescale);
+    const dt = performance.now() - state.drawState.twinkleTimestamp;
+    return state.twinkle && (dt > state.twinkleTimescale);
 }
 
 function redrawField() {
     clearCanvas();
     if (twinkleIsTimedOut()) {
-        state.drawState.twinkleDeltaMags = state.drawState.stars.map((data) => {
+        state.drawState.twinkleDeltaMags = state.drawState.stars.map((data) =>{
             const mag = data[2];
             return (10 - mag)
                 * (Math.random() * 0.15 - 0.075)
