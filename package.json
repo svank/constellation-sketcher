@@ -1,6 +1,6 @@
 {
   "name": "constellation-sketcher",
-  "version": "1.0.2",
+  "version": "1.0.3",
   "description": "Library for drawing constellations",
   "homepage": "https://github.com/svank/constellation-sketcher",
   "repository": "github:svank/constellation-sketcher",
