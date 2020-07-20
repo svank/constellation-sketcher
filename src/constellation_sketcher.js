@@ -3,8 +3,7 @@ import constellationData from "./constellation_data.json";
 import {randomChoice, randomWeightedChoice, extractLinesAtPoint} from './constellation_sketcher_utils.js';
 
 const state = {
-    mode: "uninitialized",
-    
+    // Configurable values
     nextConstellation: "Orion",
     animated: true,
     drawLines: true,
@@ -21,10 +20,13 @@ const state = {
     crossFadeTime: 750,
     weights: {popular: 2, striking: 2, medium: 1, small: 0},
     
+    // User-provided callbacks
     drawBeginCallback: null,
     drawFrameCompleteCallback: null,
     drawCompleteCallback: null,
     
+    // Internal state
+    mode: "uninitialized",
     drawState: null,
     oldDrawState: null,
     fadeState: null,
@@ -34,8 +36,18 @@ const state = {
     frameRequest: null,
 };
 
+// Store a copy of the default config
 const defaults = Object.assign({}, state);
+// Ensure `weights` is an independent copy
 defaults.weights = JSON.parse(JSON.stringify(state.weights));
+
+
+
+/**
+ * Functions for configuring state
+*/
+
+
 
 export function setConstellation(constellation) {
     state.nextConstellation = constellation;
@@ -169,6 +181,14 @@ export function setDrawCompleteCallback(drawCompleteCallback) {
     return this;
 }
 
+
+
+/**
+ * Functions for controlling ConstellationSketcher
+*/
+
+
+
 export function sketch() {
     state.slideshow = false;
     setup();
@@ -204,6 +224,14 @@ export function reset() {
     Object.assign(state, defaults);
     state.weights = JSON.parse(JSON.stringify(defaults.weights));
 }
+
+
+
+/**
+ * Internal functions
+*/
+
+
 
 function setup() {
     if (state.slideshowTimeout !== null) {
@@ -262,6 +290,7 @@ function startSketch() {
         state.drawBeginCallback(state.ctx);
     
     const cdat = constellationData[state.drawState.constellation];
+    // Functions which properly scale positions and magnitudes
     const sx = (x) => (x/1000 * (state.canvasScale - 2 * state.padding)
                        + state.padding
                        + (state.width - state.canvasScale)/2);
@@ -313,6 +342,14 @@ function startSketch() {
     }
 }
 
+/**
+ * Draws one frame in a fade-in animation. Requests that it be called
+ * again if appropriate. Includes handling for setting up the fade
+ * on the first frame and for moving along after the last frame.
+ * 
+ * Handles both an initial fade-in from a transparent canvas and
+ * cross-fades from one constellation to another.
+ */
 function fadeIn(timestamp) {
     let fadeIsStarting = false;
     if (state.fadeState === null) {
@@ -390,6 +427,9 @@ function fadeIn(timestamp) {
     }
 }
 
+/**
+ * Handles one-off activities after a sketch is completed.
+ */
 function onSketchEnd() {
     state.mode = "waiting";
     if (state.drawCompleteCallback instanceof Function)
@@ -397,6 +437,11 @@ function onSketchEnd() {
     sketchIsEnded();
 }
 
+/**
+ * Provides an "idle loop" after sketching has ended. Schedules calls
+ * to itself to ensure stars continue to twinkle. Queues up another
+ * constellation after the appropriate delay if in slideshow mode.
+ */
 function sketchIsEnded() {
     if (state.mode === "waiting" && state.twinkle) {
         if (twinkleIsTimedOut()) {
@@ -442,7 +487,8 @@ function startAnimatingALine() {
 
 /**
  * Called through window.requestAnimationFrame, completes one frame of
- * animation when drawing lines.
+ * animation when drawing lines. Will enqueue another call to this function
+ * for the next frame or advance the sketching state, as appropriate.
  */
 function drawLineFrame(timestamp) {
     if (state.mode !== "drawing_lines" && state.mode !== "fading")
@@ -503,11 +549,19 @@ function drawLineFrame(timestamp) {
             state.frameRequest = window.requestAnimationFrame(drawLineFrame)
 }
 
+/**
+ * Returns True if stars should be redrawn this frame so they twinkle.
+ */
 function twinkleIsTimedOut() {
     const dt = performance.now() - state.drawState.twinkleTimestamp;
     return state.twinkle && (dt > state.twinkleTimescale);
 }
 
+/**
+ * Draws the field from scratch, including the black BG, all the stars,
+ * and every constellation line that has already been completed. Star
+ * twinkle is updated if appropriate.
+ */
 function redrawField() {
     clearCanvas();
     if (twinkleIsTimedOut()) {

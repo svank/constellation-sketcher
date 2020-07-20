@@ -2,9 +2,9 @@ function randomChoice(array) {
     return array[Math.floor(Math.random() * array.length)];
 }
 
-/*
-Accepts an object where the keys are items and the values are weights.
-Returns one randomly-selected item.
+/**
+ * Accepts an object where the keys are items and the values are weights.
+ * Returns one randomly-selected item.
  */
 function randomWeightedChoice(itemWeightsMapping) {
     let sumOfWeights = 0;
@@ -20,6 +20,10 @@ function randomWeightedChoice(itemWeightsMapping) {
     }
 }
 
+/**
+ * Given a set of lines (start and end points), returns all lines which start
+ * or end at a given coordinate.
+ */
 function extractLinesAtPoint(lines, x, y) {
     const extractedLines = []
     lines = lines.filter((line) => {
